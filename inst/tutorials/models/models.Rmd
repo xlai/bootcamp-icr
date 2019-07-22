@@ -1,0 +1,70 @@
+---
+title: "Linear models in R"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Linear models
+
+Ordinary least squares regression models can be run using the R command `lm` for _linear model_.
+Generalised linear models (e.g. logit) are provided by the `glm` command.
+Multi-level linear models (e.g. patient-level intercepts) are provided by the `nlme` and `lme4` packages, and `lme4` also suppports multi-level generalised linear models.
+
+```{r}
+model_data <- data.frame(
+  TNO = c(1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4),
+  Arm = c(0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1) %>% as.factor,
+  Time = c(0, 3, 6, 0, 3, 6, 0, 6, 0, 3, 6),
+  TS = c(10, 8, 7, 8, 6, 4, 7, 8, 4, 3, 1)
+)
+
+model_data
+```
+
+The data looks like this:
+```{r, echo = FALSE}
+library(ggplot2)
+
+model_data %>% 
+  ggplot(aes(x = Time, y = TS, group = TNO, col = Arm)) + 
+  geom_point() + 
+  geom_line() + 
+  theme(legend.position = 'bottom')
+```
+
+We have four patients with up to 3 measures of `TS` (tumour size) in each. 
+Let us assume that we want to analyse changes in `TS`.
+We could fit a linear model.
+```{r}
+lm1 <- lm(TS ~ 1 + Time, data = model_data)
+```
+
+The `~` sign says that the thing on the left is estimated by the things on the right.
+On the right of `~` appear the explanatory variables.
+The `1` stands for an intercept, or the average response value when all other explanatory variables are zero.
+`Time` is also included as a covariate.
+By default,  `Time` is treated as a continuous quantity.
+
+We have run the model and assigned the result to the variable named `lm1`.
+There are many functions we can call on `lm1` to access useful information.
+For instance, to get a quick summary of the model, we can run:
+
+```{r}
+summary(lm1)
+```
+
+We see that the average intercept is about 7 and that `TS` decreases on average by about 0.4 units per unit time.
+
+We can fetch the fitted values with `fitted`.
+Let's plot them against `Time`.
+```{r}
+x <- model_data$Time
+y <- fitted(lm1)
+plot(x, y, type = 'b')
+```

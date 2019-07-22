@@ -1,0 +1,439 @@
+---
+title: "Introduction to R"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Base R
+
+At its simplest, R can be used as a calculator.
+You run commands and R tells you the answer.
+For example, if you type:
+
+```{r}
+365 / 7
+```
+you learn that there are slightly more than 52 weeks in a year.
+
+
+### Vector
+One of the core objects in R is a `vector`.
+It collects instances of the same type together.
+You can create a vector using the `c()` function.
+For instance, create a vector of numbers using code like:
+
+```{r}
+abc <- c(1, 4.5, 99, 783.276, 10 / 3)
+```
+
+The `<-` operator assigns data to a name of your choosing.
+I chose `abc`. 
+You might instead have chosen `x` or `data`, etc.
+
+Type the assignment operator using the `<` character followed by `-`.
+Assignment in R actually works in both directions.
+The chunk above could also have been written:
+
+```{r}
+c(1, 4.5, 99, 783.276, 10 / 3) -> abc
+```
+
+Back to vectors.
+There are many functions in R that operate on vectors.
+For example, to calculate the sample mean and standard deviation of these numbers, you would run:
+
+```{r}
+mean(abc)
+```
+
+and 
+
+```{r}
+sd(abc)
+```
+
+Your turn. 
+Calculate the median of `abc`.
+Type in the command then hit CTRL + Return (on Windows) or Command + Return (on Mac) to execute the command.
+
+```{r median, exercise = TRUE}
+
+```
+
+Notice the intellisence trying to guess which function you were aiming for?
+Hitting Return will autocomplete the highlighted suggestion.
+RStudio and R are very helpful like that.
+If it irritates you, hit Escape to kill it.
+
+Did your median calculation produce the answer you were expecting?
+
+Commands like `mean` and `median` take a vector and reduce it to a single summary statistic.
+In contrast, there are many commands in R that are _vectorised_, i.e. they perform an operation on each element of a vector.
+This is best understood with an example.
+What do you imagine this does:
+```{r vectorise1, exercise=TRUE}
+abc + 2
+```
+Run it and find out.
+Is that what you guessed?
+
+And what do you think is going on here:
+```{r vectorise2, exercise=TRUE, exercise.eval=TRUE}
+abc + abc^2
+```
+
+There are many functions that operate on vectors in R and return either a single statistic or another `vector`, including `length`, `sum`, `abs`, `cos`, `exp`, `log`, `log10`, .... etc.
+Have an explore.
+
+You can access the elements of a `vector` using square brackets and the intger index.
+The first elelment is:
+```{r}
+abc[1]
+```
+
+R is an _object oriented_ language so everything has a type
+You can check the type of an object using the `class` command.
+For example:
+
+```{r}
+class(abc)
+```
+
+```{r}
+class(c('The', 'quick', 'brown', 'fox'))
+```
+
+### List
+Another useful data-type is the `list`.
+Wheres vectors contained multiple instances of the same type, lists can contain values of different types.
+For example:
+
+```{r}
+l <- list(Name = "Kristian", Weight = 75, JoinedCRCTU = as.Date('2014-02-10'))
+l
+```
+
+This list contains textual, numerical and date data.
+You access elements of a list using double square brackets and either integer indices:
+```{r}
+l[[1]]
+```
+
+or textual names:
+```{r}
+l[['JoinedCRCTU']]
+```
+
+Lists can contain essentially anything as an element, including vectors and even other lists.
+There are functions that operate on lists that we will encounter later.
+
+
+### Data-frame
+The final data-type that you must know about is the data-frame, written in R as `data.frame`.
+These can be throught of as spreadsheets of data arranged in columns and rows.
+Each column has a type and a name.
+Rows can have names (but they need not).
+
+There are many ways of creating data-frames but here is perhaps the simplest:
+
+```{r}
+trials <- data.frame(
+  name = c('PePS2', 'Matrix', 'Viola'),
+  phase = ordered(c('II', 'II', 'I'), levels = c('I', 'II', 'III'))
+)
+
+trials
+```
+
+This example introduces the `ordered` data-type.
+This is a special type of factor variable where the levels are ordered.
+
+Extend the example above to add a variable called `n` containing the following trial sample sizes:
+
+* PePS2 has 62 patients;
+* Matrix has 200 patients;
+* Viola has 24 patients.
+
+```{r extend-dataframe, exercise=TRUE, exercise.eval=FALSE}
+data.frame(
+  
+) -> trials
+
+trials
+```
+
+```{r extend-dataframe-hint}
+data.frame(
+  trials, 
+  n = c()
+) -> trials
+
+trials
+```
+
+We will learn about a rich grammar for working with data-frames in the next Section.
+
+
+## Tidyverse
+
+The `tidyverse` is a set of packages developed by RStudio that make working with data in R simple and intuitive, at least in the opinion of this author.
+The jewel in the `tidyverse` crown is `dplyr`, a package for working with data-frames.
+It is not part of base R and so must be loaded explicitly using the `library` command:
+
+```{r, message=FALSE}
+library(dplyr)
+```
+
+We will take our `trials` example from the previous Section and expand it a little:
+```{r}
+trials <- data.frame(
+  name = c('PePS2', 'BTOG2', 'Viola', 'RomiCar', 'Matrix', 'PIIIa'),
+  disease = c('lung', 'lung', 'haem', 'haem', 'lung', 'dunno'),
+  n = c(62, 1363, 29, 20, 200, 600),
+  arms = c(1, 3, 1, 1, 20, 2),
+  phase = ordered(c('II', 'III', 'I', 'I', 'II', 'III'), 
+                  levels = c('I', 'II', 'III'))
+)
+
+trials
+```
+
+One of the hallmarks of tidyverse R is the use of `%>%`, the pipe operator.
+It means _take what is on the left and use it as the first parameter in the function on the right_.
+Put like that, it doesn't sound particularly useful.
+Some examples might help.
+Let's retain only trials with `n` greater than 100:
+
+```{r}
+trials %>% 
+  filter(n > 100)
+```
+
+Your turn.
+Write a command to show only trials in `haem`:
+```{r just_haem, exercise = TRUE}
+
+```
+
+```{r just_haem-hint}
+# Test equality of a column containing text using
+filter(col_name == 'sought_value')
+```
+
+
+Another way of writing the command that filtered on sample size is:
+```{r}
+filter(trials, n > 100)
+```
+
+However, using the `%>%` operator is powerful because it allows you daisy-chain commands together to create complex analyses.
+For example, we can calculate the number of patients per arm in trials with a sample size of at least 100:
+
+```{r}
+trials %>% 
+  filter(n > 100) %>% 
+  mutate(pats_per_arm = n / arms)
+```
+
+A very useful combination of verbs is `group_by` and `summarise`.
+For example, let's say we are interested in calculating the average sample size by trial phase.
+We could do that like this:
+
+```{r}
+trials %>% 
+  group_by(phase) %>% 
+  summarise(avg_n = mean(n))
+```
+
+That looks about right to me.
+Now you do some examples, pooling verbs from the previous examples.
+
+What is the average sample size by disease area?
+```{r n-by-disease, exercise = TRUE}
+
+```
+
+What is the average number of arms by disease area, excluding trials in phase I?
+
+```{r arms-by-disease, exercise = TRUE}
+
+```
+
+```{r arms-by-disease-hint}
+# remove phase I trials in this example using one of:
+filter(phase != 'I')
+filter(phase == 'II' | phase == 'III')
+filter(phase %in% c('II', 'III'))
+```
+
+
+## RStudio
+The R application is a little austere, in that it provides few luxuries.
+Most people interact with R through another program and the most common is probably RStudio.
+
+RStudio makes it easier to write R code, run code, write documentation and research articles, interact with source control. 
+We recommend it without hesitation.
+
+### Desriable changes
+There are, however, some things we request that RStudio users do in CRCTU to promote reproducible research and coding for others.
+Please take the following steps on any RStudio instance you use for CRCTU work.
+
+1. Select "Tools -> Global Options…". Under "General", please:
+  a) set "Save workspace to .Rdata on exit" to "Never";
+  b) uncheck "Restore .Rdata into workspace at startup".
+
+Why would we do this?
+
+Please also:
+
+2. Select "Tools -> Global Options…". Under "General":
+  a) 	Under "Code -> Display", check "Show margin" and set "Margin column" to 80. 
+  
+This creates a vertical line at 80 characters. 
+When writing code, please do not exceed this margin. 
+Nobody should have to scroll across to read what you have written. 
+  
+The code you and I write belongs to CRCTU and it will need to be executed by others. 
+This is the first step to good coding style that will promote writing software that others can run and maintain.
+There are many other elements of coding style we should follow as well.
+Any volunteers to research and develop this?
+
+### Make this place your own
+
+There are other steps you should explore to make your RStudio session your own.
+
+Under "Tools -> Global Options", experiment with different pane layouts. 
+I personally like to have code editor in top-left pane and console output on top-right.
+That makes sense to me but you might prefer something different.
+
+You never really live somewhere until you have decorated, so change the RStudio theme.
+Under "Tools -> Global Options", go to the Appearance tab and try out some different editor themes.
+I quite like some of the dark themes like Cobalt and Vibrant Ink.
+
+Extra special brownie points are available to anyone with the tekkers to create their own theme.
+I hope you are tempted down this road.
+I am but I have never found the time.
+
+
+## Packages
+R packages are a way of grouping together R code, help files, long-form documentation called _vignettes_, tutorials (just like this one), and document templates.
+
+Packages are an essential part of using R because base R is actually fairly limited. 
+Many of the useful capabilities of R are provided by packages.
+For instance, we saw in the previous examples that the commands `filter`, `mutate`, `group_by`, `summarise` and many others are provided by the `dplyr` package.
+This is fairly typical of open-source languages.
+Both Julia and Python take a similar approach.
+
+Typically, packages are installed from CRAN (Comprehensive R Archive Network), the official repository for R packages.
+Packages can be installed from elsewhere too, like GitHub, or a local zip file.
+Ultimately, someone needs to write the package and make it available.
+
+### Libraries of packages and CRCTU
+R installs packages to a _library_.
+The default library location is a sub-directory of the user's home path.
+Historically, this has created problems in CRCTU so we advise that you change that manually.
+The following steps can be run on your CRCTU machine to locate the R library to the C drive.
+
+* Create the folder C:\\R\\Library.
+* Click Start --> Control Panel --> User Accounts --> Change my environmental variables.
+* The Environmental Variables window pops up. ...
+* Change or add the R_LIBS_USER variable so that it points to the directory that you created. 
+
+
+
+### Install a package from CRAN
+The primary source for R packages is CRAN.
+To install a package from CRAN, you run:
+```{r, eval=FALSE}
+install.packages('package_name')
+```
+
+This fetches the latest version of `package_name` and installs it in the library of packages on your system.
+Crucially, it also tries to satisfy all package dependencies.
+Packages depend on other packages to perform tasks for them.
+This allows packages to specialise in precise tasks and avoids the need to reinvent the wheel many times.
+It does, however, create a network of package dependencies that can sometimes be overwhelming to behold.
+
+Exercise: what packages does the R package`lme4` rely on?
+Look up the CRAN page for `lme4`.
+
+If a package you are trying to install requires a newer version of a package dependency than that present on your system, it may try to upgrade without warning you.
+This might have adverse consequences for the reproducibility of previous analyses you have run.
+Thus, a little bit of care is needed when installing packages.
+Be aware of dependencies and try to anticipate whether upgrades will present a problem.
+Nevertheless, software moves relentlessly forwards and a pragmatic embracing of upgrades will often by inevitable.
+For example, how many apps have updated on your iOS or Android phone in the last week? 
+
+Exercise: What does the R package `MASS` do? When was the last version released? What changes did the last release bring? Install the package.
+```{r install-MASS, exercise = TRUE}
+
+```
+
+
+### Install a package from GitHub
+In many instances, packages are available on GitHub as well as CRAN.
+Typically, bleedy-edge releases (i.e. those not yet added to CRAN) can be obtained by installing directly from GitHub.
+However, you should bear in mind that you might be installing untested or even non-working code. 
+You have to use your common sense.
+
+You can install from GitHub using the `devtools` package.
+Execute the following:
+```{r install-welcome, exercise = TRUE}
+devtools::install_github('brockk/welcome')
+```
+
+What function(s) does the package provide?
+Type `welcome::` in the dialogue below and autocomplete should suggest functions.
+Hit Return to accept the suggestion.
+What does the function do?
+```{r use-welcome, exercise = TRUE}
+
+```
+
+More complicated examples are available (obviously).
+But you have installed and used a package from GitHub.
+From time to time, that will be useful.
+
+
+### Install from local zip file
+You can also install packages from a zip file.
+For instance, when packages fall foul of CRAN's evolving standards and rules, they are delisted from the `install.packages` route.
+However, to promote reproducility, the historic releases are available for manual download as a zip file from the CRAN page.
+After download, these can be installed manually.
+
+TODO - install `crctu` package from zip.
+
+
+
+
+
+## Quiz
+
+*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
+
+Some questions to verify that you understand the purposes of various base and recommended R packages:
+
+```{r quiz}
+quiz(
+  question("Which package contains functions for installing other R packages?",
+    answer("base"),
+    answer("tools"),
+    answer("utils", correct = TRUE),
+    answer("codetools")
+  ),
+  question("Which of the R packages listed below are used to create plots?",
+    answer("lattice", correct = TRUE),
+    answer("tools"),
+    answer("stats"),
+    answer("grid", correct = TRUE)
+  )
+)
+```
+
