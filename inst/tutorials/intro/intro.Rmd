@@ -7,8 +7,36 @@ runtime: shiny_prerendered
 
 ```{r setup, include=FALSE}
 library(learnr)
+library(dplyr)
+
 knitr::opts_chunk$set(echo = TRUE)
+
+abc <- c(1, 4.5, 99, 783.276, 10 / 3)
+
+more_trials <- data.frame(
+  name = c('PePS2', 'BTOG2', 'Viola', 'RomiCar', 'Matrix', 'Trapeze'),
+  disease = c('lung', 'lung', 'haem', 'haem', 'lung', 'prostate'),
+  n = c(62, 1363, 29, 20, 200, 707),
+  arms = c(1, 3, 1, 1, 20, 2),
+  phase = ordered(c('II', 'III', 'I', 'I', 'II', 'III'), 
+                  levels = c('I', 'II', 'III'))
+)
 ```
+
+
+## Welcome
+
+This tutorial introduces you to R and RStudio.
+It intends to get you up and running.
+
+
+### Learning Objectives
+Upon completion of this session, you will be able to: 
+
+* Use RStudio to run commands in base R and tidyverse R;
+* Work with RStudio projects;
+* Install and use the crctu R-package
+
 
 
 ## Base R
@@ -63,6 +91,7 @@ Your turn.
 Calculate the median of `abc`.
 Type in the command then hit CTRL + Return (on Windows) or Command + Return (on Mac) to execute the command.
 
+
 ```{r median, exercise = TRUE}
 
 ```
@@ -78,27 +107,32 @@ Commands like `mean` and `median` take a vector and reduce it to a single summar
 In contrast, there are many commands in R that are _vectorised_, i.e. they perform an operation on each element of a vector.
 This is best understood with an example.
 What do you imagine this does:
-```{r vectorise1, exercise=TRUE}
+```{r vectorise-1, exercise = TRUE}
 abc + 2
 ```
 Run it and find out.
 Is that what you guessed?
 
 And what do you think is going on here:
-```{r vectorise2, exercise=TRUE, exercise.eval=TRUE}
+```{r vectorise-2}
 abc + abc^2
 ```
 
 There are many functions that operate on vectors in R and return either a single statistic or another `vector`, including `length`, `sum`, `abs`, `cos`, `exp`, `log`, `log10`, .... etc.
-Have an explore.
+Have an explore here:
 
-You can access the elements of a `vector` using square brackets and the intger index.
-The first elelment is:
+```{r explore-functions, exercise = TRUE}
+
+```
+
+
+You can access the elements of a `vector` using square brackets and the integer index.
+The first element is:
 ```{r}
 abc[1]
 ```
 
-R is an _object oriented_ language so everything has a type
+R is an _object oriented_ language so everything has a type.
 You can check the type of an object using the `class` command.
 For example:
 
@@ -109,6 +143,9 @@ class(abc)
 ```{r}
 class(c('The', 'quick', 'brown', 'fox'))
 ```
+
+Remember, the objects in a `vector` are all of the same type.
+The same is not true of lists.
 
 ### List
 Another useful data-type is the `list`.
@@ -121,7 +158,7 @@ l
 ```
 
 This list contains textual, numerical and date data.
-You access elements of a list using double square brackets and either integer indices:
+You access elements of a list using double square brackets and integer indices:
 ```{r}
 l[[1]]
 ```
@@ -161,7 +198,7 @@ Extend the example above to add a variable called `n` containing the following t
 * Matrix has 200 patients;
 * Viola has 24 patients.
 
-```{r extend-dataframe, exercise=TRUE, exercise.eval=FALSE}
+```{r extend-dataframe, exercise = TRUE, exercise.eval = FALSE}
 data.frame(
   
 ) -> trials
@@ -187,22 +224,22 @@ The `tidyverse` is a set of packages developed by RStudio that make working with
 The jewel in the `tidyverse` crown is `dplyr`, a package for working with data-frames.
 It is not part of base R and so must be loaded explicitly using the `library` command:
 
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(dplyr)
 ```
 
 We will take our `trials` example from the previous Section and expand it a little:
 ```{r}
-trials <- data.frame(
-  name = c('PePS2', 'BTOG2', 'Viola', 'RomiCar', 'Matrix', 'PIIIa'),
-  disease = c('lung', 'lung', 'haem', 'haem', 'lung', 'dunno'),
-  n = c(62, 1363, 29, 20, 200, 600),
+more_trials <- data.frame(
+  name = c('PePS2', 'BTOG2', 'Viola', 'RomiCar', 'Matrix', 'Trapeze'),
+  disease = c('lung', 'lung', 'haem', 'haem', 'lung', 'prostate'),
+  n = c(62, 1363, 29, 20, 200, 707),
   arms = c(1, 3, 1, 1, 20, 2),
   phase = ordered(c('II', 'III', 'I', 'I', 'II', 'III'), 
                   levels = c('I', 'II', 'III'))
 )
 
-trials
+more_trials
 ```
 
 One of the hallmarks of tidyverse R is the use of `%>%`, the pipe operator.
@@ -212,7 +249,7 @@ Some examples might help.
 Let's retain only trials with `n` greater than 100:
 
 ```{r}
-trials %>% 
+more_trials %>% 
   filter(n > 100)
 ```
 
@@ -230,26 +267,30 @@ filter(col_name == 'sought_value')
 
 Another way of writing the command that filtered on sample size is:
 ```{r}
-filter(trials, n > 100)
+filter(more_trials, n > 100)
 ```
 
 However, using the `%>%` operator is powerful because it allows you daisy-chain commands together to create complex analyses.
 For example, we can calculate the number of patients per arm in trials with a sample size of at least 100:
 
 ```{r}
-trials %>% 
+more_trials %>% 
   filter(n > 100) %>% 
   mutate(pats_per_arm = n / arms)
 ```
 
 A very useful combination of verbs is `group_by` and `summarise`.
-For example, let's say we are interested in calculating the average sample size by trial phase.
-We could do that like this:
+For example, let's say we are interested in analysing sample size by trial phase.
+We could proceed:
 
 ```{r}
-trials %>% 
+more_trials %>% 
   group_by(phase) %>% 
-  summarise(avg_n = mean(n))
+  summarise(
+    min_n = min(n),
+    avg_n = mean(n),
+    max_n = max(n)
+  )
 ```
 
 That looks about right to me.
@@ -281,8 +322,8 @@ Most people interact with R through another program and the most common is proba
 RStudio makes it easier to write R code, run code, write documentation and research articles, interact with source control. 
 We recommend it without hesitation.
 
-### Desriable changes
-There are, however, some things we request that RStudio users do in CRCTU to promote reproducible research and coding for others.
+### Desirable changes
+There are, however, some things we request that RStudio users do in CRCTU to promote reproducible research and responsible coding for others.
 Please take the following steps on any RStudio instance you use for CRCTU work.
 
 1. Select "Tools -> Global Options…". Under "General", please:
@@ -416,24 +457,95 @@ TODO - install `crctu` package from zip.
 
 ## Quiz
 
-*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
+Let us recap some of what we have learned with a quiz.
 
-Some questions to verify that you understand the purposes of various base and recommended R packages:
-
-```{r quiz}
+```{r quiz, echo = FALSE}
 quiz(
-  question("Which package contains functions for installing other R packages?",
-    answer("base"),
-    answer("tools"),
-    answer("utils", correct = TRUE),
-    answer("codetools")
+  
+  question("Which types can be used to associate different values?",
+    answer("data.frame", correct = TRUE),
+    answer("character", correct = FALSE),
+    answer("vector", correct = TRUE),
+    answer("list", correct = TRUE)
   ),
-  question("Which of the R packages listed below are used to create plots?",
-    answer("lattice", correct = TRUE),
-    answer("tools"),
-    answer("stats"),
-    answer("grid", correct = TRUE)
+  
+  question("Vectors allow values of different types to be associated?",
+    answer("FALSE", correct = TRUE),
+    answer("TRUE", correct = FALSE)
+  ),
+
+  question("Lists allow values of different types to be associated?",
+    answer("FALSE", correct = FALSE),
+    answer("TRUE", correct = TRUE)
+  ),
+  
+  question("How would you remove unwanted rows in a data.frame using dplyr?",
+    answer("summarise", correct = FALSE),
+    answer("select", correct = FALSE),
+    answer("filter", correct = TRUE),
+    answer("mutate", correct = FALSE)
+  ),
+  
+  question("How would you calculate statistics for each level of a group using dplyr?",
+    answer("summarise", correct = TRUE),
+    answer("select", correct = FALSE),
+    answer("filter", correct = FALSE),
+    answer("mutate", correct = FALSE)
+  ),
+  
+  question("Which commands add new columns using dplyr?",
+    answer("summarise", correct = TRUE),
+    answer("select", correct = FALSE),
+    answer("filter", correct = FALSE),
+    answer("mutate", correct = TRUE)
+  ),
+  
+  question("Code in packages on GitHub is always reliable.",
+    answer("FALSE", correct = TRUE),
+    answer("TRUE", correct = FALSE)
+  ),
+  
+  question("Code in packages on CRAN is always reliable.",
+    answer("FALSE", correct = TRUE),
+    answer("TRUE", correct = FALSE)
   )
 )
 ```
 
+
+## Next steps
+
+The material in this session forms the foundation of much of the future training sessions in R, in particular working with `ggplot2` and automating document creation using `rmarkdown`.
+
+If you enjoyed using R and RStudio, please keep at it. 
+There is nothing like using a tool to solve real problems to really learn how it works.
+
+There are many many R resources online.
+
+* A key reference is the book _R for Data Science_ by RStudio's Hadley Wickham.
+Hadley wrote much of the `tidyverse` packages.
+The book is available free online in its entirety at https://r4ds.had.co.nz/
+
+The `learnr` tutorials are great:
+
+* https://jjallaire.shinyapps.io/learnr-tutorial-01-data-basics/
+* https://jjallaire.shinyapps.io/learnr-tutorial-03a-data-manip-filter/
+* https://jjallaire.shinyapps.io/learnr-tutorial-03b-data-manip-mutate/
+* https://jjallaire.shinyapps.io/learnr-tutorial-03c-data-manip-summarise/
+
+There is an R package for learning R (obviously).
+It is called `swirl`.
+Launch an interactive session by running the following in RStudio:
+
+```{r eval=FALSE}
+install.packages('swirl')
+library(swirl)
+swirl()
+```
+
+There are further resources at www.codeacademy.com and www.datacamp.com
+
+
+Please tell us what you find helpful.
+
+Kristian Brock, CRCTU, 2019.
