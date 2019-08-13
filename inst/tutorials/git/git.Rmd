@@ -1,0 +1,401 @@
+---
+title: "Using git"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+# Etc
+
+```
+
+
+## Welcome
+
+This tutorial introduces you to git and gets you running some elementary commands.
+
+### Learning Objectives
+Upon completion of this session, you will:
+
+* `clone` a git repository;
+* Make and `commit` some changes;
+* Make those changes available to others by using the `push` command;
+* Fetch other people's changes using the `pull` command;
+* Resolve simple conflicts using TODO-what?
+* Use git at CRCTU to manage the analysis directory for a trial.
+
+
+## Introduction to git
+
+[git](https://en.wikipedia.org/wiki/Git) is version-control software that tracks changes in text-based files. 
+This makes it possible to associate changes to files with individuals and monitor the state of files through time. 
+It also allows multiple people to work on the same project with the assurance that they will not bulldoze each other's work. 
+
+Speaking as a clinical trial statistician, git performs many tasks that are valuable for demonstrating to auditors (e.g. MHRA inspectors) that you have followed your trials unit's standard operating procedures.
+
+But what is a _text-based_ file?
+
+```{r text-based, echo = FALSE}
+quiz(
+  
+  question("An R script with extension `R`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("A Stata script with extension `do`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("A text file with extension `txt`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("An image with extension `png`",
+    answer("Yes", correct = FALSE),
+    answer("No", correct = TRUE)
+  ),
+  
+  question("A LaTeX input file with extension `tex`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("A PDF file (with extension `pdf`, obviously)",
+    answer("Yes", correct = FALSE),
+    answer("No", correct = TRUE)
+  ),
+  
+  question("A Word document with extension `doc`",
+    answer("Yes", correct = FALSE),
+    answer("No", correct = TRUE)
+  ),
+  
+  question("An Excel sheet with extension `xls`",
+    answer("Yes", correct = FALSE),
+    answer("No", correct = TRUE)
+  ),
+  
+  question("A web-page with extension `html`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("A zip file with extension `zip`",
+    answer("Yes", correct = FALSE),
+    answer("No", correct = TRUE)
+  ),
+  
+  question("A Word document with extension `docx`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("An Excel sheet with extension `xlsx`",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  )
+  
+)
+```
+
+Hopefully most of those were obvious.
+If those last two threw you, modern MS Office formats are xml-based, making them technically text-based.
+
+
+### Using git
+`git` is initialised to track changes in a directory.
+A directory being tracked is generally referred to as a _repository_ or a _repo_.
+
+In the simplest setting, there are two instances of a repository that work together:
+
+a) the _origin_ generally exists in some remote or central location. 
+It is like a treasure chest. 
+We wish to put precious new code into the treasure chest to protect it and make it available to others we trust.
+A common place to store an origin repo is GitHub or GitLab.
+We do not generally make changes to the origin.
+b) a working _clone_ or _copy_ of the repository.
+This is generally stored somewhere local and convenient, like a hard disk on your computer or a network drive at work.
+A working copy is initialy created by _cloning_ the origin.
+Changes are then made on this copy and _pushed_ to the origin.
+Until changes are pushed, they are not available to others.
+
+We will perform of all these actions on a repository created for training.
+
+
+
+## Using the command line
+git is command line software.
+There are programs that allow you interact with git using forms and buttons and we will come to those.
+But these just run commands on your behalf.
+Fundamentally, git is command line software and that is where we will begin.
+All three major operating systems allow the user to run commands.
+The methods vary, however.
+The briefest possible introduction to the command line for the main three operating systems appears below.
+
+
+### Command line on Windows
+On a Windows machine, we would run commands using the Command Prompt program (hit Windows key and type `cmd`) or Windows Powershell (hit Windows key and type `powershell`).
+We change drive by typing the drive letter you want followed by colon, and then hitting Return.
+E.g. running `H:` will change the current drive to H.
+We list the contents of the current directory by running `ls`.
+We change directory by running `cd directory_to_open` and we go up a directory by running `cd ..`.
+
+
+### Command line on Mac
+On a Mac, we would use Terminal (hit cmd + space and type `terminal`).
+There are no drive letters.
+As with Windows, we list the contents of the current directory by running `ls`.
+We change directory by running `cd directory_to_open` and we go up a directory by running `cd ..`.
+
+### Command line on Linux
+Anyone who uses Linux knows how to use the command line. 
+It goes with the territory.
+
+
+### Exercise
+
+* Open a command prompt.
+* List the contents of the current directory.
+* Change the directory to one of the sub-directories. List the contents.
+* Go back up.
+
+
+## git workflow
+
+We are going to work on a project created for the purposes of illustrating how git works.
+We will perform the elementary commands:
+
+* `clone`
+* `status`
+* `log`
+* `pull`
+* `commit`
+* `push`
+
+However, let us not all charge on at the same time.
+Let us instead proceed one or two persons at a time to replicate how changes to a project might be made in real-life, with some users active and some users dormant.
+Please pay attention to the verbal instructions!
+
+### Clone
+Identify a place on your computer or network drives where it would be suitable to store your working copy of the project folder.
+For instance, on my Mac, I might store the folder in `/Users/Kristian/Projects/`.
+At work, I might choose `H:/Projects/`.
+
+Navigate to this place now.
+
+The URL for the origin respository for this project is https://github.com/brockk/gitbootcamp2019.
+Clone the project using the command: 
+
+`git clone https://github.com/brockk/gitbootcamp2019`
+
+The project is called gitbootcamp2019.
+The process of cloning will create a directory called `gitbootcamp2019` and download all the contents.
+For example using the root directory identified above, after cloning I would have a working copy in the directory  `/Users/Kristian/Projects/gitbootcamp2019/`.
+Check the directory has been created by running:
+
+`ls`
+
+If the `gitbootcamp2019` directory is not there, something is amiss. 
+Seek help.
+
+If it is there, navigate into it and check the contents using:
+
+`cd gitbootcamp2019`
+
+`ls`
+
+Check your synchronisation status by running: 
+
+`git status`
+
+You should receive a message telling you that your branch is up to date with the origin because nothing has yet changed.
+
+Also run:
+
+`git log`
+
+This should show you the message and user associated with recent commits.
+
+
+### Pull
+
+To synchronise your repository with the origin, you run:
+
+`git pull`
+
+
+If you run it now, you should get a message telling you that you are already up to date.
+This may be no surprise, given that you just cloned the repository.
+However, let us imagine that you had created the clone some time ago.
+It is likely that the origin will have received updates in the interim and that your copy is out of date.
+By running `git pull`, you fetch any updates that you are lacking.
+Before making edits to a project, it is good practice to do this.
+It may save you pain later.
+
+
+### Make changes
+
+Open up the file called `Attendees.txt`.
+Append your name to the list of attendees.
+To do this, using a simple text editor like NotePad or TextEdit is fine.
+Save and close the file.
+
+### Commit
+
+You made changes to a file that is git tracked and git will have noticed this.
+To confirm this, run:
+
+`git status`
+
+Now you should see a message that the file has been modified.
+In order to share these changes with others, we must commit the changes.
+
+To do this, run: 
+
+`git add Attendees.txt`
+
+This command adds `Attendees.txt` to the list of files to commit.
+
+Then commit using:
+
+`git commit -m "Added my name"`
+
+The `-m` option means _I am going to give you a commit message and here it comes_.
+The commit message appears inside the double quotes.
+The quotes are important.
+
+Check the project status by once again running: 
+
+`git status`
+
+You should receive confirmation now that there is nothing further to commit because you just committed the one change.
+You will also see that your branch is a commit ahead of the origin.
+
+By committing, you have advanced _your copy_ of the project.
+However, other users do not know about the change yet.
+In order for them to see your changes, you need to `push`.
+
+### Push
+To push your local commit(s) to the origin, you run:
+
+`git push`
+
+Run that now.
+After a little pause, you may receive a success message mentioing objects written to github.com.
+If so, you have successfully updated the project and shared your progress. 
+Congratulate yourself.
+Check the status of your local repo again by running:
+
+`git status`
+
+The message about being ahead of the origin should have gone.
+You should now be nicely in sync.
+
+
+However, if the origin has moved on since you last pulled (recall that this is completely out of your control because you are working in a collaborative environment!), then your `push`  will fail and you will get a message saying that updates were rejected.
+If this happens, the following subsections are for you.
+
+#### Pull (again)
+You are in situation where you are trying to add to a repository whilst being ignorant about recent changes.
+**git forbids this.**
+You need to make yourself aware of recent changes and you do that by pulling from the origin.
+It may be that the commits you are ignorant about have changed different files to you.
+If so, git will merge the two commits with no drama and allow you to push as before.
+If, however, there are conflicts because you and a colleague edited the same file, the software will tell you so.
+
+Fetch the missing commits by running:
+
+`git pull`
+
+If you receive a message like: 
+
+> CONFLICT (content): Merge conflict in <file(s)>, 
+>
+> Automatic merge failed; fix conflicts and then commit the result.
+
+go to the next section.
+
+If git auto-merged the conflicts, you can just `git push` as normal.
+
+
+#### Merge (possibly)
+You are in the awkward situation where you need to merge conflicting changes to a file.
+There is no way git can do this for you because the software does not know what you and your colleague intended to achieve.
+All it knows is that your changes are in conflict and that a human has to resolve it.
+
+Open the file(s) in conflict using a suitable editor.
+In our contrived example, we have created conflicts in Attendees.txt and we can resolve the conflicts in a text editor.
+
+Open the file.
+The conflicts will be denoted using blocks like this:
+
+> <<<<<<< HEAD
+>
+> * Person 1
+>
+> =======
+>
+> * Person 2
+> 
+> \>\>\>\>\>\>\> 65d6d676a1b7e1ecf13966a5acf66fc7e9b09e5f
+
+The bit in the first section (here, "Person 1") is what you tried to add and the bit in the second section ("Person 2") is what the file in the repository wants to use.
+The conflicting sections are separated by the ====== and encloed within the angle brackets.
+Finally, the long alphanumeric string conveys the commit in the repository to which your changes are being compared.
+You would resolve this example by simpling editing the file to say:
+
+> * Person 1
+>
+> * Person 2
+
+i.e. you simply delete the lines with the angle brackets and the equals signs.
+Save and close. 
+
+At this point, your copy of `Attendees.txt` has been changed again so it needs to be staged for commit again with:
+
+`git add Attendees.txt`
+
+In the wild, you would need to re-add any files that have been changed through conflicts being resolved.
+
+You then commit all added files again with another (meaningful!) commit message.
+Do this by running:
+
+`git commit -m "Resolving conflict"`
+
+To check out the lay of the land, run once more:
+
+`git status`.
+
+You will see that you are now two commits ahead of origin: one for your original changes and another for the resolution to the conflict.
+
+
+#### 
+
+Push the ensemble to the origin with:
+
+`git push`
+
+This should succeed.
+
+[But be aware, it need not necessarily succeed!
+If you are working on a project with hundreds of collaborators who are adding commits, and resolving your conflicts took an appreciable amount of time, it is entirely possible that someone else snuck in another commit in the interim. In this case, your `push` would fail again for the same reason and you would find yourself doing another merge. As painful as this sounds, it is important to acknowledge that git is preventing you and colleagues from over-writing each other's work. That is worth a lot.]
+
+
+## Point-and-click software
+
+In practice, it is common to `commit`, `push` and `pull` using a graphical program like TortoiseGit or a development environment like RStudio, which works nicely with git via a dedicated pane.
+Using these graphical methods, you generally select files that you want to commit by ticking boxes.
+You then type in a commit message and click a button to commit.
+And then you click another button to push.
+This route is nice because it saves a lot of typing
+
+
