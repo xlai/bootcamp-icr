@@ -89,7 +89,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h2>Analysis Directory</h2>
 <p>We propose that each CRCTU clinical trial will have an <em>Analysis Directory</em> to hold the materials produced by statisticians in the act of analysing a clinical trial, including testing and data-cleaning.</p>
 <p>The top-level looks like this:</p>
-<p><img src="folders_files/AnalysisDirectory.png" /></p>
+<p><img src="folders_files/AnalysisDirectory.PNG" /></p>
 <p>We see that the <code>CDAID</code> trial associated with the <code>D3B</code> team, has an analysis directory called <code>CDAIDAnalysis</code> that sits directly below the trials’s root folder <code>T:\Trials Work\D3B\CDAID\</code>.</p>
 <p>The first folder we shall note is the <code>Publications</code> directory. This is where all materials related to (you guessed it) publications reside. Publications do not just include journal papers, however. The term also covers conference abstracts and posters.</p>
 <p>Two other important folders to highlight are <code>DMC</code> and <code>TSC</code>. These store materials related to meetings of the data monitoring committee (DMC) and trial steering committee (TSC) respectively.</p>
@@ -113,7 +113,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <div id="section-tsc-substructure" class="section level2">
 <h2>TSC Substructure</h2>
 <p>An example of the directory structure below the <code>TSC</code> folder is shown below.</p>
-<p><img src="folders_files/TSCAnalysisSubdirectory.png" /></p>
+<p><img src="folders_files/TSCAnalysisSubdirectory.PNG" /></p>
 <p>In this particular example, the trial had TSC meetings on 2017-09-19 and 2018-11-26. Each of these would have contained the analysis and associated data snapshots that were presented at those meetings. The structure below each would have mirrored the <code>YYYY-MM-DD</code> directory expanded above.</p>
 <p>We see that there is a <code>DataValidation</code> sub-directory. It is intended that this would contain evidence of data cleaning and queries. A future bootcamp lesson will conduct hands-on data cleaning examples.</p>
 <p>We also see the <code>Snapshot -&gt; YYYY-MM-DD</code> pair in several places, with subdirectories including <code>Agreement</code> and <code>Data</code>. This pattern is used again and again in the analysis directory so it is worthy of explanation, <code>YYYY-MM-DD</code> would be replaced with the date that the snapshot was taken. <code>Agreement</code> would hold evidence that the trials staff had confirmed that all available data was added to the database and that the statistician should take a snapshot. Usually this would take the form of an email. Our quality management processes require this communication to be filed to demonstrate that reasonable measures were taken to ensure no data was unnecessarily omitted. Further bootcamp sessions will demonstrate the hands-on process of taking a database snapshot in R and Stata.</p>
@@ -183,27 +183,27 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <tr>
 <td>
 
-<div id="htmlwidget-93ae0c762a642bbc0325" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-a39c2a6343bd619faa11" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-93ae0c762a642bbc0325">{"x":{"question":"Which of the following are animals?","answers":[{"option":"Cat","correct":true,"message":null},{"option":"Petunia","correct":false,"message":null},{"option":"Turmeric","correct":false,"message":null},{"option":"Lizard","correct":true,"message":null}],"label":"quiz-1","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Which of the following are animals?","a":[{"option":"Cat","correct":true,"message":null},{"option":"Petunia","correct":false,"message":null},{"option":"Turmeric","correct":false,"message":null},{"option":"Lizard","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-a39c2a6343bd619faa11">{"x":{"question":"Which of the following are animals?","answers":[{"option":"Cat","correct":true,"message":null},{"option":"Petunia","correct":false,"message":null},{"option":"Turmeric","correct":false,"message":null},{"option":"Lizard","correct":true,"message":null}],"label":"quiz-1","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Which of the following are animals?","a":[{"option":"Cat","correct":true,"message":null},{"option":"Petunia","correct":false,"message":null},{"option":"Turmeric","correct":false,"message":null},{"option":"Lizard","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-f017fe7963c60c66b6b6" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-744ff5e564f740d65903" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-f017fe7963c60c66b6b6">{"x":{"question":"Reviewers that demand p-values should be:","answers":[{"option":"Rewarded with cuddles.","correct":false,"message":null},{"option":"Fired into the sun.","correct":true,"message":null}],"label":"quiz-2","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Reviewers that demand p-values should be:","a":[{"option":"Rewarded with cuddles.","correct":false,"message":null},{"option":"Fired into the sun.","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-744ff5e564f740d65903">{"x":{"question":"Reviewers that demand p-values should be:","answers":[{"option":"Rewarded with cuddles.","correct":false,"message":null},{"option":"Fired into the sun.","correct":true,"message":null}],"label":"quiz-2","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Reviewers that demand p-values should be:","a":[{"option":"Rewarded with cuddles.","correct":false,"message":null},{"option":"Fired into the sun.","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 </table>
