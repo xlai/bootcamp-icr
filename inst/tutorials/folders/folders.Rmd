@@ -81,7 +81,7 @@ We propose that each CRCTU clinical trial will have an _Analysis Directory_ to h
 
 The top-level looks like this:
 
-![](folders_files/AnalysisDirectory.png)
+![](folders_files/AnalysisDirectory.PNG)
 
 We see that the `CDAID` trial associated with the `D3B` team, has an analysis directory called `CDAIDAnalysis` that sits directly below the trials's root folder `T:\Trials Work\D3B\CDAID\`.
 
@@ -123,7 +123,7 @@ In those examples, the superfluous folders can just remain empty.
 
 An example of the directory structure below the `TSC` folder is shown below. 
 
-![](folders_files/TSCAnalysisSubdirectory.png)
+![](folders_files/TSCAnalysisSubdirectory.PNG)
 
 In this particular example, the trial had TSC meetings on 2017-09-19 and 2018-11-26.
 Each of these would have contained the analysis and associated data snapshots that were presented at those meetings.
