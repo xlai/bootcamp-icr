@@ -1,0 +1,85 @@
+---
+title: "Tutorial title"
+author: "Joe Bloggs"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+# Etc
+
+```
+
+
+## Welcome
+
+This tutorial DOES WHAT?
+
+### Learning Objectives
+Upon completion of this session, you will:
+
+* Be able to fulfill Learning Objective 1;
+* Be able to fulfill Learning Objective 2;
+* Be able to fulfill Learning Objective 3.
+
+
+## Section 1
+
+Introduce this section ...
+
+Demonstrate some code:
+```{r}
+mtcars %>% head()
+```
+
+Set an exercise:
+```{r exercise1, exercise = TRUE}
+
+```
+
+Set an exercise where you start the example:
+```{r exercise2, exercise = TRUE}
+mtcars %>% 
+  filter(mpg < 20)
+
+```
+
+Set an exercise where you provide a hint:
+```{r exercise3, exercise = TRUE}
+
+```
+```{r exercise3-hint}
+mtcars %>% 
+  filter(mpg < 20) %>% 
+  group_by(cyl) %>% 
+  summarise(mean(hp))
+```
+
+
+
+## Quiz
+Throw in some quizes to check learning progress:
+
+```{r quiz, echo = FALSE}
+quiz(
+  
+  question("Which of the following are animals?",
+    answer("Cat", correct = TRUE),
+    answer("Petunia", correct = FALSE),
+    answer("Turmeric", correct = FALSE),
+    answer("Lizard", correct = TRUE)
+  ),
+  
+  question("Reviewers that demand p-values should be:",
+    answer("Rewarded with cuddles.", correct = FALSE),
+    answer("Fired into the sun.", correct = TRUE)
+  )
+)
+```
+
+
