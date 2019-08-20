@@ -1,5 +1,5 @@
 
-<img src="inst/images/logo.png" width="400">
+<img src="inst/images/logo.PNG" width="400">
 
 The `bootcamp` R package contains materials written to train new biostatisticians at Cancer Research UK Clinical Trials Unit at the University of Birmingham. 
 Sessions are presented as [learnr](https://rstudio.github.io/learnr/) tutorials.
