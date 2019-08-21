@@ -64,6 +64,7 @@ above) are:
   - `folders`
   - `git`
   - `ggplot2`
+  - `markdown`
 
 More are coming.
 

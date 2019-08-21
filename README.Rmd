@@ -63,6 +63,7 @@ Tutorials currently available (i.e. valid substitutions for `intro` above) are:
 * `folders`
 * `git`
 * `ggplot2`
+* `markdown`
 
 More are coming.
 

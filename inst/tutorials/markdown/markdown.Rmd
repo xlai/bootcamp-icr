@@ -1,6 +1,6 @@
 ---
-title: "Tutorial title"
-author: "Joe Bloggs"
+title: "markdown"
+author: "Kristian Brock"
 output: learnr::tutorial
 runtime: shiny_prerendered
 ---
@@ -12,74 +12,149 @@ knitr::opts_chunk$set(echo = TRUE)
 # Any setup R code can go here
 library(dplyr)
 # Etc
-
 ```
 
 
 ## Welcome
 
-This tutorial DOES WHAT?
+This tutorial introduces you to [markdown](https://en.wikipedia.org/wiki/Markdown), a plain-text syntax for creating formatted documents.
+
 
 ### Learning Objectives
-Upon completion of this session, you will:
+Upon completion of this session, you will be able to:
 
-* Be able to fulfill Learning Objective 1;
-* Be able to fulfill Learning Objective 2;
-* Be able to fulfill Learning Objective 3.
+* Create and view a markdown document;
+* Add section headers;
+* Add **bold**, _italic_ and `typewriter` formatting to text;
+* Create bulleted and numbered lists;
+* Add URLs and images.
 
 
-## Section 1
+## Markdown
 
-Introduce this section ...
+[Markdown](https://en.wikipedia.org/wiki/Markdown) offers a means of creating format-rich, production-quality documents using only a text editor.
+That is valuable because text files can be edited and viewed on nearly every computer on the planet.
+The same cannot be said for Word documents (that require licenced software) or PDFs (that require compilation from an input file).
+The power of markdown will really be revealed in later tutorials when we create documents that contain R and Stata output.
+The goal of this tutorial is to get you familiar with the elements that comprise the markdown format.
+We will build on those skills to report statistical analyses later.
 
-Demonstrate some code:
-```{r}
-mtcars %>% head()
-```
 
-Set an exercise:
-```{r exercise1, exercise = TRUE}
+## CommonMark
+[CommonMark](https://en.wikipedia.org/wiki/Markdown#CommonMark) is standardised variant of Markdown. 
+It is the basis of the markdown used by GitHub to describe code packages, including the [`bootcamp` package](https://github.com/brockk/bootcamp) that we created for your training.
 
-```
+The CommonMark website provides a cheatsheet that demonstrates the core markdown elements: 
 
-Set an exercise where you start the example:
-```{r exercise2, exercise = TRUE}
-mtcars %>% 
-  filter(mpg < 20)
+https://commonmark.org/help/
 
-```
 
-Set an exercise where you provide a hint:
-```{r exercise3, exercise = TRUE}
+It also provides a fantastic interactive tutorial for learning markdown.
+No point re-inventing the wheel here.
+Launch their tutorial now and do not return here until you have completed it:
 
-```
-```{r exercise3-hint}
-mtcars %>% 
-  filter(mpg < 20) %>% 
-  group_by(cyl) %>% 
-  summarise(mean(hp))
-```
+https://commonmark.org/help/tutorial/
 
 
 
-## Quiz
-Throw in some quizes to check learning progress:
+## Exercise
 
-```{r quiz, echo = FALSE}
-quiz(
-  
-  question("Which of the following are animals?",
-    answer("Cat", correct = TRUE),
-    answer("Petunia", correct = FALSE),
-    answer("Turmeric", correct = FALSE),
-    answer("Lizard", correct = TRUE)
-  ),
-  
-  question("Reviewers that demand p-values should be:",
-    answer("Rewarded with cuddles.", correct = FALSE),
-    answer("Fired into the sun.", correct = TRUE)
-  )
-)
-```
+Within RStudio, create a new text file by clicking `File -> New File -> Text File`.
+Save the file as `MyFile.md`; it is important that you specify the file extension as `md`.
 
+Now give the document some content.
+The content need only be limited by your own creativity, so go nuts and give us a glimpse of your personality.
+
+Please add:
+
+* A header
+* a horizontal rule
+* two paragraphs of text (unless you are effortlessly verbose, you may find _lorem ipsum_ useful here. Google it.)
+* a numbered or bulleted list
+* an image
+* a working link to some website (test the link!)
+* bonus points: add a link that will allow readers to email you.
+
+Within RStudio, you can click the Preview button at any time to get a peek at the nicely-formatted finished product.
+
+Are you happy to present your document to the group?
+If so, please email it to kristian.brock@gmail.com and you can talk it through on the big screen.
+If you are using RStudio via a web page, you can download a file to the computer you are using by:
+
+* selecting the file in the Files pane;
+* clicking More
+* clicking Export...
+
+
+## Pandoc
+
+[Pandoc](https://pandoc.org/) is a tool that converts documents of one type into another type.
+It is a command line tool, meaning you interact with it using Terminal or DOS or the bash shell or PowerShell or (...yawn).
+The quality of the conversion, however, depends on the format you are converting _from_.
+Markdown is a good base-case of document because it converts to everything nicely.
+
+To illustrate the usage of pandoc, imagine you have a file called `Cats.md` and you want a Word version called `Cats.docx`.
+You would run:
+
+> pandoc Cats.md -s -o Cats.docx
+
+The first argument to the pandoc application is the document we are converting from.
+The `-s` option means "I want the output to be fully-fledged or _stand-alone_".
+The `-o` options means "And here comes the name of file I want you to create".
+By default, pandoc infers the output format by the file extension.
+Thus, we have not told it to create a Word file but it knows that `.docx` files are Word files.
+
+Brilliant thing number 3,281 about RStudio is that it ships pandoc by default, and provides a Terminal pane for interacting with the computer running your R session.
+Finding pandoc, however, can require some tenacity.
+
+### RStudio-Cloud
+If you using RStudio-Cloud, pandoc is (at Aug-2019) stored in
+
+/usr/lib/rstudio-server/bin/pandoc/pandoc
+
+but the program is not on the _path_ (the list of places the computer looks to find programs.
+To verify this, run
+
+> `pandoc --version`
+
+That command should fail.
+Now run
+
+> `/usr/lib/rstudio-server/bin/pandoc/pandoc --version`
+
+That should tell you stuff about pandoc, demonstrating that the computer and pandoc are communicating.
+
+To convert a markdown file into Word version, you would run:
+
+> `/usr/lib/rstudio-server/bin/pandoc/pandoc Cats.md -s -o Cats.docx`
+
+To get an HTML or PDF version, you would run:
+
+> `/usr/lib/rstudio-server/bin/pandoc/pandoc Cats.md -s -o Cats.html`
+>
+> `/usr/lib/rstudio-server/bin/pandoc/pandoc Cats.md -s -o Cats.pdf`
+
+Try those commands on your markdown file.
+Verify that the outputs are created in the Files pane.
+Download the generated files via `Modify -> Export...`in the Files pane.
+Do they look as they should?
+
+### RStudio on your computer or through RStudio-Server
+
+pandoc should be on the path.
+Verify this by typing 
+
+> pandoc --version
+
+in the Terminal window.
+
+The following commands might well be enough to convert 
+
+> `pandoc Cats.md -s -o Cats.html`
+>
+> `pandoc Cats.md -s -o Cats.docx`
+>
+> `pandoc Cats.md -s -o Cats.pdf`
+
+The command that converts to pdf will require that $\LaTeX$ is installed on your computer / the server computer.
 
