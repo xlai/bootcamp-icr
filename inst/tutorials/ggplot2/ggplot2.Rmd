@@ -97,7 +97,7 @@ mcycle %>%
   geom_point()
 ```
 
-The new plot is certainly prettier, but the commands to produce it are much more complex
+The new plot is certainly prettier, but the commands to produce it are much more complex.
 `ggplot2` certainly has a learning curve and may seem needlessly arcane initially.
 But its power comes with its breadth and its consistency.
 Once you learn the principles, you will quickly learn how to create all manner of plots.
@@ -119,12 +119,12 @@ The call to `aes` above is saying "The $x$-coordinates for this plot are stored 
 There are many aesthetics that can be specified, like `colour`, `group`, `fill`, `shape`, `linetype`. 
 We will encounter these below.
 
-The third thing to stress is that calls to `ggplot` and followed by calls to any number of _geometries_.
+The third thing to stress is that calls to `ggplot` are followed by calls to any number of _geometries_.
 Each geometry adds a layer to the plot representing the data in some way.
 Our example above uses `geom_point` which is the geometry for dropping points on a plot, as in a scatter plot.
-The 
 
-You can use any number of geometries in a plot.
+You can add any number of geometries to a plot.
+They are overlaid, like layers.
 To add another to our example above, you simply append it using the `+` operator.
 For example, if we wanted to join the dots in this plot, we can add a line using `geom_line`: 
 
@@ -167,7 +167,7 @@ We have learned how to put some points on a plot and join them up or fit a smoot
 So far, so good.
 Frequently, however, we will encounter data that is grouped in some way.
 For instance, in a clinical trial we may have patients allocated to different treatments.
-In this tutorial we will learn how to reflect group-level information in `ggplot2` using:
+In this section we will learn how to reflect group-level information in `ggplot2` using:
 
 * colour in plots;
 * the `group_by` command;
@@ -187,7 +187,7 @@ Many of the online `ggplot2` examples use the `diamonds` dataset so building som
 
 ### Colour
 Let's examine the relationship between `carat` and `price`.
-Using your skills from the previous Section, produce a simple scatter plot of `carat` on the $x$-axis, and `price` on the $y$-axis.
+Using your skills from the previous section, produce a simple scatter plot of `carat` on the $x$-axis, and `price` on the $y$-axis.
 
 ```{r carat-vs-price, exercise = TRUE}
 diamonds1k %>% 
@@ -221,9 +221,7 @@ Giving each group its own subplot might make things clearer.
 We cover that next.
 
 ### Facets
-TODO - `facet_grid`
-
-If your plot is a bit too noisy, sometimes a very useful trick is to make several versions of the plot, with each showing the data for one particular group.
+If your plot is a bit too noisy, sometimes a very useful trick is to make several versions of the same plot, with each showing the data for one particular group.
 This is achieved in `ggplot2` using the `facet_wrap` and `facet_grid` commands.
 These are applied to a plot using the `+` operator, exactly as new geometries are.
 The subplots are displayed in a matrix shape.
@@ -245,7 +243,7 @@ This makes it possible to read horizontally and vertically to compare groups.
 `facet_wrap` also takes optional parameters `ncol` or `nrow`, specifying the number of columns or rows to use in the grid of plots.
 You only need to use one because the other is implicit.
 If both are omitted, `ggplot2` decides for you.
-Edit the example above to produce a plot with two columns:
+Edit the example above to produce a plot with five columns:
 
 ```{r carat-vs-price-pivot-cut, exercise = TRUE}
 
@@ -264,6 +262,10 @@ Do that now:
 
 The smooths reflect only the data in each subplot.
 This is because the `facet_wrap` command splits the dataset and that split perpetuates through to the call to `geom_smooth`.
+Thus, grouping has been achieved without it really being that explicit.
+
+What do you make of the relationship between `cut` and `price`?
+The effect is detectable in this plot, but it looks surprisingly weak to me.
 
 What do you expect a 1 carat diamond to cost for each type of cut?
 To make it easier to look up from the $x$-axis, you can add a vertical line to each plot.
@@ -274,12 +276,13 @@ And it is added in the usual way:
 diamonds1k %>% 
   ggplot(aes(x = carat, y = price)) + 
   geom_point(aes(col = cut)) + 
-  facet_wrap(~ cut, ncol = 2) + 
+  facet_wrap(~ cut, ncol = 5) + 
   geom_smooth() + 
   geom_vline(xintercept = 1, col = 'red', linetype = 'dashed')
 ```
 
 Notice from the call to `geom_vline` that variables can be allocated values outside of `aes` when the values they take do not depend on the data.
+For example, in this example we wanted the vertical line at $x = 1$, irrespective the data.
 In another example where the location of the vertical line depended on the dataset, the  `xintercept` variable would instead have been allocated inside `aes` one of the columns in `diamonds1k`.
 
 So let us revisit the question of interest: what do you expect a 1 carat diamond to cost for each type of cut?
@@ -298,7 +301,7 @@ Take the example immediately above and change it to reflect the effect of `clari
 
 The third method of grouping data is to explicitly specify the `group` aesthetic.
 This is required, for instance, when you want to show lines on the same plot.
-A common example of this in medical research is repeated outcome measures.
+A common example of this in medical research is repeated outcome measures, like quality of life scores.
 We investigate such a scenario now with a simulated dataset from a two-arm trial where tumour size was measured at baseline and several times post-baseline.
 
 The dataset is quite large but the first few rows look like this:
@@ -314,8 +317,8 @@ tumours %>%
   geom_point()
 ```
 
-but this plot shows no grouping information: we do not know which points join up.
-Edit this example by appending `geom_line()` to get line-plots:
+but this plot shows no grouping information: we do not know which points join up. i.e. which points are associated with which patient.
+Edit this example by appending `geom_line()` to get line-plots (do not worry about trying to convey the grouping variable for now):
 
 ```{r tumour-lines, exercise = TRUE, exercise.lines = 5}
 tumours %>% 
@@ -328,18 +331,46 @@ What has gone wrong?
 
 The plot has joined the points as they arrived in the data-frame.
 The result is that unrelated points have been joined together to create a non-sensical plot.
-We need to set the `group` aesthetic within the call to `geom_line` to be `TNO` to reflect that only points within the same patient should be joined.
-Do that now:
+We need to set the `group` aesthetic within the call to `geom_line` to be `TNO` to reflect that only points within the same patient if (called `TNO`) should be joined.
+We do that like this:
 
-```{r tumour-lines-grouped, exercise = TRUE, exercise.lines = 5}
+```{r tumour-lines-grouped, exercise = FALSE, exercise.lines = 5}
 tumours %>% 
   ggplot(aes(x = Time, y = TumourSize)) + 
-  geom_point()
+  geom_point() + 
+  geom_line(aes(group = TNO))
 ```
 
-We will finish off this example by producing a plot that is commony seen in cancer trials literature.
-A_spider plot_ shows the repeated measures of tumour size _relative to baseline_.
-This last clause is important because tumour sizes are analysed under the RECIST criteria for response compared to baseline.
+Notice that there are now two calls to `aes`.
+Aesthetics can be assigned inside the `ggplot` function and inherited by all geometries.
+Or they can be overridden in a specific geometry by nesting a call to `aes` inside that `geom_XYZ` function.
+Colour the points and lines by adding `col = TumourSize` inside the call `aes` inside the call to `ggplot`:
+
+```{r tumour-lines-grouped-colour, exercise = TRUE, exercise.lines = 5}
+tumours %>% 
+  ggplot(aes(x = Time, y = TumourSize)) + 
+  geom_point() + 
+  geom_line(aes(group = TNO))
+```
+
+Now adapt that example by relocating the `col = TumourSize` part from the general `aes` call to the `aes` call inside `geom_line`.
+
+```{r tumour-lines-grouped-colour2, exercise = TRUE, exercise.lines = 5}
+tumours %>% 
+  ggplot(aes(x = Time, y = TumourSize)) + 
+  geom_point() + 
+  geom_line(aes(group = TNO))
+```
+
+What happened?
+Is that what you expected?
+Do you understand how aesthetics can be inherited and overriden?
+
+
+### Spider plot
+We will finish off this session by producing a plot that is commonly seen in cancer trials literature.
+A _spider plot_ shows the repeated measures of tumour size _relative to baseline_.
+This last bit in italics is important because tumour sizes are analysed under the RECIST criteria for response compared to baseline.
 
 To marry up each observation with the relevant baseline observation, we can use a `dplyr` join.
 
@@ -351,7 +382,7 @@ tumours %>%
   select(TNO, Baseline = TumourSize)
 ```
 
-Notice that the `TumourSize` variable in this dataset has been given the alias `Baseline`.
+Notice how the `TumourSize` variable in this dataset has been given the alias `Baseline`.
 This is to avoid confusion in the imminent change-from-baseline calculation.
 
 The baseline dataset can be joined to the original dataset by TNO:
@@ -373,7 +404,7 @@ The join here:
 * and pools the columns.
 
 Note:
-The significance of the left in `left_join` is that the LHS record is retained even if no match in the RHS could be found.
+The significance of the word _left_ in `left_join` is that the LHS record is retained even if no match in the RHS could be found.
 Other types of joins exist, like `right_join`, `full_join`, `anti-join`.
 Be aware that the type of join determines what data you see. 
 Joins can be confusing and deserve some dedicated study.
@@ -384,7 +415,7 @@ Obviously the two columns are equal when `Time` = 0.
 The same is not true of later values - take a look by clicking on the blue tab numbers.
 
 Before we can produce the spider-plot, we need to calculate the percentage change from baseline.
-Do that now using the `mutate` command:
+Do that now using the `mutate` command to calculate the `ChangeFromBaseLine` variable:
 
 ```{r tumours-change, exercise = TRUE, exercise.lines = 8}
 tumours %>% 
@@ -392,11 +423,13 @@ tumours %>%
     tumours %>% 
       filter(Time == 0) %>% 
       select(TNO, Baseline = TumourSize), by = 'TNO'
-  )
+  ) %>% 
+  mutate(ChangeFromBaseLine = )
 ```
 
 Do your numbers look right?
-If so, paste your command below and add commands from earlier examples in this section to produce line-plots of repeated measures by patient.
+If so, paste your command below and add commands from earlier examples in this section to produce line-plots of repeated measures by patient. 
+Put `Time` on the $x$-axis, and `ChangeFromBaseLine` on the $y$-axis.
 
 ```{r tumours-change-plot, exercise = TRUE, exercise.lines = 11}
 
@@ -440,7 +473,50 @@ More importantly, which treatment would you prefer?
 
 
 ## Quiz
-todo
+Let us recap some of what we have learned with a quiz.
+
+```{r quiz, echo = FALSE}
+quiz(
+  
+  question("What name identifies the abstract concept of associating aspects of a plot with your data values?",
+    answer("Geometries", correct = FALSE),
+    answer("Aesthetics", correct = TRUE),
+    answer("Properties", correct = FALSE)
+  ),
+  
+  question("What name identifies layers of a plot",
+    answer("Geometries", correct = TRUE),
+    answer("Aesthetics", correct = FALSE),
+    answer("Properties", correct = FALSE)
+  ),
+  
+  question("What name identifies the flexible parametric smoother we used?",
+    answer("Lois", correct = FALSE),
+    answer("LowEss", correct = FALSE),
+    answer("Loess", correct = TRUE),
+    answer("Louis", correct = FALSE),
+    answer("Louise", correct = FALSE),
+    answer("Dave", correct = FALSE)
+  ),
+  
+  question("Can aesthetics be inherited?",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  ),
+  
+  question("What sequence or symbol do you use to add layers to a ggplot?",
+    answer("&", correct = FALSE),
+    answer("+", correct = TRUE),
+    answer("*", correct = FALSE),
+    answer("and also", correct = FALSE)
+  ),
+  
+  question("Do you like ggplot?",
+    answer("Yes", correct = TRUE),
+    answer("No", correct = FALSE)
+  )
+)
+```
 
 ## Exercise
 Take the spider-plot example and adapt it to create a _waterfall plot_.
