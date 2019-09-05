@@ -149,7 +149,7 @@ The same is not true of lists.
 
 ### List
 Another useful data-type is the `list`.
-Wheres vectors contained multiple instances of the same type, lists can contain values of different types.
+Whereas vectors contained multiple instances of the same type, lists can contain values of different types.
 For example:
 
 ```{r}
@@ -446,13 +446,30 @@ From time to time, that will be useful.
 ### Install from local zip file
 You can also install packages from a zip file.
 For instance, when packages fall foul of CRAN's evolving standards and rules, they are delisted from the `install.packages` route.
-However, to promote reproducility, the historic releases are available for manual download as a zip file from the CRAN page.
+However, to promote reproducibility, the historic releases are available for manual download as a zip file from the CRAN page.
 After download, these can be installed manually.
 
-TODO - install `crctu` package from zip.
+There are other cases where you might prefer to install a package from a local zip file.
+For instance, if the code in a package is sensitive and you do not want to share it with the outside world.
+In fact, this is precisely the situation with the `crctu` package.
+It contains functions for performing common tasks at CRCTU like taking, saving and loading database snapshots.
+It also contains template RMarkdown reports for various tasks - we will encounter those later in bootcamp.
+For now, install the `crctu` package from zip file.
 
+Identify the most recent version at
 
+> T:\\Code\\R\\Packages\\crctu_X.Y.Z.tar.gz
 
+Install it by selecting:
+
+1. Tools -> Install packages...
+2. Under Install from: select Package Archive File (.zip; .tar.gz)
+3. A dialogue box should appear. Navigate to the file you identified above and select Open
+4. Check the value of Install to Library: Is this right?
+5. Hit Install
+6. Test you can load it by running `library(crctu)`.
+
+We will learn how to use `crctu` in a later class.
 
 
 ## Quiz
