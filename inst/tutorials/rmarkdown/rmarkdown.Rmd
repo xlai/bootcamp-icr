@@ -10,9 +10,8 @@ library(learnr)
 knitr::opts_chunk$set(echo = TRUE)
 
 # Any setup R code can go here
+library(bootcamp)
 library(dplyr)
-# Etc
-
 ```
 
 
@@ -25,7 +24,6 @@ Upon completion of this session, you will be able to:
 
 * create an R Markdown file;
 * include values, figures and tables generated from R objects;
-* include BiBTeX references;
 * compile to Word, PDF and HTML formats;
 * explore creating other documents like tutorials, presentations, and web apps.
 
@@ -83,7 +81,7 @@ We will demonstrate lots of the features by building an R Markdown document in t
 **You just created an HTML file from an R Markdown file**.
 
 Notice that there is an R chunk that says simply `summary(cars)` followed by some R output.
-The code was run and the reply from R was sticthed into the document by RStudio.
+The code was executed and the reply from R was sticthed into the document by RStudio.
 Further down there is an R plot.
 That was produced by another chunk of R code.
 
@@ -95,29 +93,183 @@ Same headers, same text, same figure, but output to Word rather than HTML.
 
 Notice in what is called the **YAML header** at the top (which contains instructions to RStudio on how to build the document) that the output type now contains `word_document`.
 Using the same method, we can build to other formats.
+For now we will proceed in HTML: delete the line that says `word_document: default`.
+
+The following sections add further embellishments to this document.
 
 
 
+## R Markdown Content
 
+In these sections we will report on the `tumours` dataset contained in the `bootcamp` package.
 
-## Quiz
-Throw in some quizes to check learning progress:
+### The setup chunk
 
-```{r quiz, echo = FALSE}
-quiz(
-  
-  question("Which of the following are animals?",
-    answer("Cat", correct = TRUE),
-    answer("Petunia", correct = FALSE),
-    answer("Turmeric", correct = FALSE),
-    answer("Lizard", correct = TRUE)
-  ),
-  
-  question("Reviewers that demand p-values should be:",
-    answer("Rewarded with cuddles.", correct = FALSE),
-    answer("Fired into the sun.", correct = TRUE)
-  )
-)
+The first chunk in your file looks like this:
+
+````markdown
+`r ''````{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
+````
 
+This is called the setup chunk.
+It plays a special role because it contains code that should be run to prepare resources for the rest of the document.
+
+In yours, edit it so it looks like this:
+
+````markdown
+`r ''````{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(bootcamp)
+library(dplyr)
+library(ggplot2)
+```
+````
+
+This will ensure that the `bootcamp` package is loaded so that the other chunks will be able to access the `tumours` dataset.
+It also loads the `dplyr` and `ggplot2` packages because we will use those too.
+
+
+### Clean slate
+Get rid of everything in your Rmd file below the setup chunk.
+We will start from a clean slate.
+
+
+## Inline statistics
+
+We are reporting on the `tumours` dataset mirroring the way that we in CRCTU might report on a clinical trial.
+By way of introduction for the reader, let us imagine that we want to add a sentence that says:
+
+> The trial assessed n1 patients at n2 timepoints.
+
+We could hard-code the values for $n1$ and $n2$.
+However, far prefereble is that those values would be calculated by R.
+That way, our report will be accurate whatever snapshot is used.
+Luckily, R markdown can include such _inline statistics_.
+
+Do you remember the `dplyr` commands we encountered in an earlier tutorial? 
+We are going to use them again.
+Add to your document the line 
+
+> The trial assessed N1 patients at `` `r
+tumours %>% distinct(Time) %>% nrow` `` timepoints.
+
+Note that this does not need to go inside an R chunk; it just goes in the document as demonstrated.
+The `` `r
+command` `` bit creates a mini inline chunk that is swapped for whatever the command happens to resolved to.
+You can probably work out that the R command in our example will evaluate to the number of distinct times observed in the dataset.
+
+**Exercise**: edit the example in your document so that the number of patients is calculated too.
+
+Obviously this method of adding data inline only makes sense for small pieces of information.
+Larger objects like figures and tables are handled by chunks.
+They are the topics of the next two Sections.
+
+
+## Plots
+
+To add a figure to your diagram, simply add an R chunk that yields a plot, like this:
+
+````markdown
+`r ''````{r, fig.width = 8, fig.height = 6}
+tumours %>% 
+  ggplot(aes(x = Time, y = TumourSize)) + 
+  geom_point()
+```
+````
+
+The parameters `fig.width` and `fig.height` control the width and height of the figure. 
+Often it is useful to have this level of control.
+
+If you want to see the plot without the R code that produced it, simply set `echo = FALSE` in the plot chunk: 
+````markdown
+`r ''````{r, echo = FALSE, fig.width = 8, fig.height = 6}
+tumours %>% 
+  ggplot(aes(x = Time, y = TumourSize)) + 
+  geom_point()
+```
+````
+
+If you want to add a caption to the figure, you use:
+
+````markdown
+`r ''````{r, echo = FALSE, fig.width = 8, fig.height = 6, fig.cap = 'Tumour assessments through time.'}
+tumours %>% 
+  ggplot(aes(x = Time, y = TumourSize)) + 
+  geom_point()
+```
+````
+
+**Exercise**: add the plot to your document. 
+Add a sentence or two before the plot to explain what is coming. 
+Add lines to the diagram joining the observations of individuals, coloured by treatment arm. 
+Feel free to add a smoother or use `facet_wrap` if you feel that makes the results clearer.
+Refer to the earlier sessions if you need to!
+
+
+
+## Tables
+
+To format an R `data.frame` as table in an R markdown file, simply run it through the `knitr::kable` function.
+For instance:
+
+````markdown
+`r ''````{r, echo = FALSE, fig.cap = 'Tumour assessments through time.'}
+tumours %>% 
+  group_by(Arm) %>% 
+  summarise(n = n()) %>% 
+  knitr::kable()
+```
+````
+The same works for objects like `tibble` that behave like data-frames.
+
+
+**Exercise**: add the table to your document. 
+Edit the example to calculate the mean and standard-deviation for each arm at each time-point.
+
+## Equations
+
+Equations can be added by wrapping $\LaTeX$ expressions in pairs of single dollar signs for inline equations:
+
+````markdown
+The sample mean is $\frac{1}{n}\sum_{i=1}^n x_i$
+````
+
+to produce 
+
+> The sample mean is $\hat{\mu} = \frac{1}{n}\sum_{i=1}^n x_i$
+
+and pairs of double dollar signs for whole-line equations:
+
+````markdown
+and the sample variance is $$\left\{ \frac{1}{n}\sum_{i=1}^n x_i^2 \right\} - \hat{\mu}^2$$
+````
+
+to produce 
+
+> and the sample variance is $$\left\{ \frac{1}{n}\sum_{i=1}^n x_i^2 \right\} - \hat{\mu}^2$$
+
+**Exercise**: add the equation for Euler's identity to your document.
+
+## Other content
+
+**Exercise**: Change the author in the YAML header to be you.
+
+All of the content we learned in the markdown session will also work in R markdown.
+
+**Exercise**: Add some section headers to your document.
+Also add a list, just because.
+Add a link at the bottom so that readers can email you if they have a question.
+Bonus points if you can work out how to automatically set the subject line of the email.
+
+## Compilation
+Compile your document to:
+
+* HTML
+* Word 
+* and PDF
+
+Please <a href="mailto:k.brock@bham.ac.uk?subject=rmarkdown">email your finished examples</a> to Kristian.
 
