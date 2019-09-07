@@ -1,0 +1,123 @@
+---
+title: "RMarkdown"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+# Etc
+
+```
+
+
+## Welcome
+
+This tutorial builds on the Markdown session by introducing R Markdown, a tool for creating documents using R.
+
+### Learning Objectives
+Upon completion of this session, you will be able to:
+
+* create an R Markdown file;
+* include values, figures and tables generated from R objects;
+* include BiBTeX references;
+* compile to Word, PDF and HTML formats;
+* explore creating other documents like tutorials, presentations, and web apps.
+
+
+## The R Markdown format
+
+Markdown documents are simply text files that provide rich formatting using simple commands.
+The files take the extension `.md`.
+We previously learned that Markdown documents can be compiled to Word, PDF and HTML formats (amongst others) using pandoc.
+
+R Markdown is a related format using the `.Rmd` extension that allows users to knit in data and images from an R session to create a wide range of output formats, including:
+
+* HTML web pages
+* Word documents
+* $\LaTeX$ files and PDFs
+* PowerPoint, Beamer and HTML slides
+* Journal articles
+* Interactive Shiny apps and tutorials (including this tutorial!)
+* R package and GitHub documentation
+
+As this list makes clear, R Markdown is an incredibly flexible and powerful tool.
+Its value to us as statisticians is that it allows us to:
+
+1. quickly create documents 
+2. that convey analysis of data
+3. combining text, tables, plots, and equations, etc
+4. in formats that are familiar to readers
+
+As the name suggests, the cornerstone of R Markdown is the underlying Markdown format.
+Ultimately, document conversion is conducted using pandoc but RStudio handles that for us.
+
+
+
+## R Markdown resources
+
+There are lots of examples on the web about learning R Markdown.
+You will undoubtedly find those useful as you learn new things.
+For now we will start with an introductory video from one of the best providers of R markdown, the RStudio website:
+
+https://rmarkdown.rstudio.com/lesson-1.html
+
+
+We will demonstrate lots of the features by building an R Markdown document in the following sections.
+
+
+
+
+## Creating and compiling your first document
+
+* Create a new R Markdown file in RStudio by clicking R -> New File -> R Markdown. This opens a dialogue box.
+* You can specify a Title and Author is you wish but this can easily be changed later.
+* There are options to select the output format. Select HTML and click OK. This creates a file with some default content.
+* Click the Knit button in the title bar. This will prompt you to save the file. Once you save the file, the document will compile and you will be presented with the output in a web browser.
+
+**You just created an HTML file from an R Markdown file**.
+
+Notice that there is an R chunk that says simply `summary(cars)` followed by some R output.
+The code was run and the reply from R was sticthed into the document by RStudio.
+Further down there is an R plot.
+That was produced by another chunk of R code.
+
+### Word version
+Notice the little downward arrow next to the Knit button.
+From that dropdown, select _Knit to Word_.
+This creates a Word document from the same input `Rmd` file.
+Same headers, same text, same figure, but output to Word rather than HTML.
+
+Notice in what is called the **YAML header** at the top (which contains instructions to RStudio on how to build the document) that the output type now contains `word_document`.
+Using the same method, we can build to other formats.
+
+
+
+
+
+## Quiz
+Throw in some quizes to check learning progress:
+
+```{r quiz, echo = FALSE}
+quiz(
+  
+  question("Which of the following are animals?",
+    answer("Cat", correct = TRUE),
+    answer("Petunia", correct = FALSE),
+    answer("Turmeric", correct = FALSE),
+    answer("Lizard", correct = TRUE)
+  ),
+  
+  question("Reviewers that demand p-values should be:",
+    answer("Rewarded with cuddles.", correct = FALSE),
+    answer("Fired into the sun.", correct = TRUE)
+  )
+)
+```
+
+
