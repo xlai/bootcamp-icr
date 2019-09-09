@@ -456,7 +456,15 @@ It contains functions for performing common tasks at CRCTU like taking, saving a
 It also contains template RMarkdown reports for various tasks - we will encounter those later in bootcamp.
 For now, install the `crctu` package from zip file.
 
-Identify the most recent version at
+First there are some preliminary steps to take.
+In an R-script, execute the commands:
+
+1. `install.packages('RODBC')`
+2. `install.packages('readstata13')`
+3. Check those installs work with `library(RODBC)` and `library(readstata13)`.
+
+If the steps above succeeded, you can install our `crctu` package.
+Identify the most recent version of the package at
 
 > T:\\Code\\R\\Packages\\crctu_X.Y.Z.tar.gz
 
