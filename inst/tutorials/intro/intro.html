@@ -334,8 +334,13 @@ What function(s) does the <code>welcome</code> package provide? Type <code>welco
 <h3>Install from local zip file</h3>
 <p>You can also install packages from a zip file. For instance, when packages fall foul of CRAN’s evolving standards and rules, they are delisted from the <code>install.packages</code> route. However, to promote reproducibility, the historic releases are available for manual download as a zip file from the CRAN page. After download, these can be installed manually.</p>
 <p>There are other cases where you might prefer to install a package from a local zip file. For instance, if the code in a package is sensitive and you do not want to share it with the outside world. In fact, this is precisely the situation with the <code>crctu</code> package. It contains functions for performing common tasks at CRCTU like taking, saving and loading database snapshots. It also contains template RMarkdown reports for various tasks - we will encounter those later in bootcamp.</p>
-<p>If you are within CRCTU’s firewall, you can install the <code>crctu</code> package from zip file.</p>
-<p>Identify the most recent version at:</p>
+<p>If you are within CRCTU’s firewall, you can install the <code>crctu</code> package from zip file. First there are some preliminary steps to take. Execute the commands:</p>
+<ol style="list-style-type: decimal">
+<li><code>install.packages('RODBC')</code></li>
+<li><code>install.packages('readstata13')</code></li>
+<li>Check those installs work with <code>library(RODBC)</code> and <code>library(readstata13)</code>.</li>
+</ol>
+<p>If the steps above succeeded, you can install our <code>crctu</code> package. Identify the most recent version of the package at</p>
 <blockquote>
 <p>T:\Code\R\Packages\crctu_X.Y.Z.tar.gz</p>
 </blockquote>
@@ -360,105 +365,105 @@ What function(s) does the <code>welcome</code> package provide? Type <code>welco
 <tr>
 <td>
 
-<div id="htmlwidget-9b57321c2dbdbeae5c16" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-4aaea3bead69b7c47235" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-9b57321c2dbdbeae5c16">{"x":{"question":"Vectors allow values of different types to be associated?","answers":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"label":"quiz-1","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Vectors allow values of different types to be associated?","a":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-4aaea3bead69b7c47235">{"x":{"question":"Vectors allow values of different types to be associated?","answers":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"label":"quiz-1","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Vectors allow values of different types to be associated?","a":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-373add159b95ed870227" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-08f39a97884f0494a4bd" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-373add159b95ed870227">{"x":{"question":"Lists allow values of different types to be associated?","answers":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"label":"quiz-2","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Lists allow values of different types to be associated?","a":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-08f39a97884f0494a4bd">{"x":{"question":"Lists allow values of different types to be associated?","answers":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"label":"quiz-2","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Lists allow values of different types to be associated?","a":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-2cda9d96bd3202c6dc55" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-7bf281e676fc5d0ed743" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-2cda9d96bd3202c6dc55">{"x":{"question":"Data-frames can contain columns of different types","answers":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"label":"quiz-3","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Data-frames can contain columns of different types","a":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-7bf281e676fc5d0ed743">{"x":{"question":"Data-frames can contain columns of different types","answers":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"label":"quiz-3","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Data-frames can contain columns of different types","a":[{"option":"FALSE","correct":false,"message":null},{"option":"TRUE","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-ad231f6baf0662d94bbd" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-e14b427c858fa8f99ab4" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-ad231f6baf0662d94bbd">{"x":{"question":"How would you remove unwanted rows in a data-frame using dplyr?","answers":[{"option":"summarise","correct":false,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":true,"message":null},{"option":"mutate","correct":false,"message":null}],"label":"quiz-4","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"How would you remove unwanted rows in a data-frame using dplyr?","a":[{"option":"summarise","correct":false,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":true,"message":null},{"option":"mutate","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-e14b427c858fa8f99ab4">{"x":{"question":"How would you remove unwanted rows in a data-frame using dplyr?","answers":[{"option":"summarise","correct":false,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":true,"message":null},{"option":"mutate","correct":false,"message":null}],"label":"quiz-4","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"How would you remove unwanted rows in a data-frame using dplyr?","a":[{"option":"summarise","correct":false,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":true,"message":null},{"option":"mutate","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-d1ce94e965f216217a58" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-8179f11b7ff3b006001c" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-d1ce94e965f216217a58">{"x":{"question":"How would you calculate statistics for each level of a group using dplyr?","answers":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":false,"message":null}],"label":"quiz-5","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"How would you calculate statistics for each level of a group using dplyr?","a":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-8179f11b7ff3b006001c">{"x":{"question":"How would you calculate statistics for each level of a group using dplyr?","answers":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":false,"message":null}],"label":"quiz-5","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"How would you calculate statistics for each level of a group using dplyr?","a":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-1489992e85ea60db3773" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-3686de0a8c42eeccf7b5" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-1489992e85ea60db3773">{"x":{"question":"Which commands add new columns using dplyr?","answers":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":true,"message":null}],"label":"quiz-6","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Which commands add new columns using dplyr?","a":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-3686de0a8c42eeccf7b5">{"x":{"question":"Which commands add new columns using dplyr?","answers":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":true,"message":null}],"label":"quiz-6","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Which commands add new columns using dplyr?","a":[{"option":"summarise","correct":true,"message":null},{"option":"select","correct":false,"message":null},{"option":"filter","correct":false,"message":null},{"option":"mutate","correct":true,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-809267e5e7138129a529" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-79ddf820013cf697131d" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-809267e5e7138129a529">{"x":{"question":"Code in packages on GitHub is always reliable.","answers":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"label":"quiz-7","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Code in packages on GitHub is always reliable.","a":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-79ddf820013cf697131d">{"x":{"question":"Code in packages on GitHub is always reliable.","answers":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"label":"quiz-7","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Code in packages on GitHub is always reliable.","a":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 <tr>
 <td>
 
-<div id="htmlwidget-6982e9bdd6eb1b98f346" style="width:100%;height:auto;", class = "quiz html-widget">
+<div id="htmlwidget-70c1ee2a75da63cc6a35" style="width:100%;height:auto;", class = "quiz html-widget">
 <div class="panel panel-default">
 <div class="panel-body quizArea">
 </div>
 </div>
 </div>
 
-<script type="application/json" data-for="htmlwidget-6982e9bdd6eb1b98f346">{"x":{"question":"Code in packages on CRAN is always reliable.","answers":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"label":"quiz-8","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Code in packages on CRAN is always reliable.","a":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-70c1ee2a75da63cc6a35">{"x":{"question":"Code in packages on CRAN is always reliable.","answers":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"label":"quiz-8","skipStartButton":true,"perQuestionResponseAnswers":true,"perQuestionResponseMessaging":true,"preventUnanswered":true,"displayQuestionCount":false,"displayQuestionNumber":false,"disableRanking":true,"nextQuestionText":"","checkAnswerText":"Submit Answer","allowRetry":false,"randomSortAnswers":false,"json":{"info":{"name":"","main":""},"questions":[{"q":"Code in packages on CRAN is always reliable.","a":[{"option":"FALSE","correct":true,"message":null},{"option":"TRUE","correct":false,"message":null}],"correct":"Correct!","incorrect":"Incorrect."}]}},"evals":[],"jsHooks":[]}</script>
 </td>
 </tr>
 </table>
