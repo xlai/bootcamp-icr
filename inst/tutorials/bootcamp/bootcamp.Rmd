@@ -1,0 +1,117 @@
+---
+title: "Introduction to Bootcamp"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+# Etc
+```
+
+
+## Welcome
+
+This session welcomes you to CRCTU and tells you what to expect for the coming months!
+
+## A Litany of Acronyms
+
+* CRCTU - We are members of the Cancer Research UK Clinical Trials Unit.
+* ICGS - The trials unit is part of the Institute of Cancer & Genomic Sciences.
+* MDS - Our institute is one of several in the Medical and Dental School.
+* UoB - There are many schools (or colleges) in the University of Birmingham.
+
+In the language of set theory:
+
+**CRCTU ⊆ ICGS ⊆ MDS ⊆ UoB**
+
+### Venues
+
+* RAICR - is the Robert Aitken Institute for Cancer Research and is the main residence for CRCTU.
+* QEH or just QE: UoB shares a site with the Queen Elizabeth Hospital. The modern building shaped like several horseshoes is actually the new QEH.
+* ITM - The Institute of Translational Medicine is the newly-refurbished research space in the old QEH building, now referred to as the Heritage Building. 
+
+
+## Bootcamp
+Bootcamp is a series of training sessions and exercises. 
+
+### Time and format
+It will take place between Sep and Dec 2019 and consist of several long-form, hands-on, task-oriented training sessions.
+
+### Objective
+The objective of bootcamp is to develop skills in CRCTU statisticians to help them become effective and efficient researchers. 
+
+### Learning Outcomes 
+Upon completion of the programme, you will be able to: 
+
+* Perform the core tasks of an academic clinical trial statistician;
+* Write research that is reproducible;
+* Manage your trials in a way that satisfies the MHRA.
+
+Each of the individual sessions will have their own learning outcomes.
+
+You will receive training from many sources at UoB. The focus of bootcamp is technical skills. Elements of bootcamp will include:
+
+* Statistical methods
+* Computational methods
+* Standard trial-related activities
+	
+### Venues
+Bootcamp sessions could possibly take place in many locations:
+
+* RAICR
+* ITM
+* Murray Learning Centre
+* Med school
+
+### Resources
+CRCTU's business is medical experiments on human beings. Rightly, that is a highly regulated activity and the integrity of our IT systems is very important. We keep data a) in databases and b) on file servers that sit within the CRCTU firewall. Where we are conducting a bootcamp session will impact which of these resources, if any, we can access. Thus, some exercises will be location-dependent. Please bear in mind that it has not been possible to plan venues completely in advance.
+
+### Resources within Venues
+In RAICR, we can access databases and file-servers. ITM is a local trusted zone. If you are in the ITM, using your CRCTU login you are effectively in RAICR.
+
+Other venues on campus like the med school, Murray Learning Centre and the library sit outside the CRCTU firewall. From these locations, you will not be able to access our databases or file servers unless you use a remote desktop session to a machine inside the CRCTU firewall. 
+
+As much as possible, the sessions have been designed so that they can be taught anywhere. Obviously, this means creating exercises that do not require CRCTU resources. However, there are naturally activities that do require CRCTU resources so these will only be possible inside RAICR or ITM (or via remote desktop).
+
+### Running Bootcamp Sessions
+The bootcamp sessions taken by Kristian will be provided as tutorials in an R package called bootcamp. You will be able to run these within any RStudio session, including:
+
+*	on an RStudio Cloud instance Kristian set up for this training at https://rstudio.cloud/project/454702
+* on CRCTU's RStudio Server instance running at https://can-rserver-01.bham.ac.uk/
+* on your own computer
+* on your work computer
+
+To install R and RStudio on any UoB computer:
+
+* Hit the Windows Start key
+* Type Software Centre
+* Search for "R".
+* Install the "R Bundle"
+* This takes a few minutes to install R, RStudio, Rtools, and a bunch of common packages. 
+This bundle is super convenient.
+
+To install the bootcamp package on your computer, work computer, or CRCTU's RStudio Server instance (n.b. you do not need to install it on the RStudio Cloud instance):
+
+* Open RStudio
+* Check that the devtools package is present by running `library(devtools)`. If an error is raised, install devtools by running the command `install.packages('devtools')` 
+*	Run the command `devtools::install_github('brockk/bootcamp')`
+
+With `bootcamp` installed, to run a tutorial:
+
+* Open Rstudio
+* Check that the learnr package is present by running `library(learnr)`. If an error is raised, install learnr by running the command `install.packages('learnr')`
+* Run the command `learnr::run_tutorial('name', package = 'bootcamp')` where `'name'` is one of:
+
+  * `intro`
+  * `folders`
+  * `git`
+  * `ggplot2`
+  * `markdown`
+  * `rmarkdown`
+  * Etc

@@ -15,15 +15,23 @@ library(learnr)
 # Click the red STOP button in the Console pane to end a tutorial.
 # You must stop a tutorial before you can run the next!
 
+# Welcome to bootcamp
+learnr::run_tutorial('bootcamp', package = 'bootcamp')
 
-run_tutorial('folders', package = 'bootcamp')
+# Folder structure for trial analyses 
+learnr::run_tutorial('folders', package = 'bootcamp')
 
-run_tutorial('intro', package = 'bootcamp')
+# Introduction to R & RStudio
+learnr::run_tutorial('intro', package = 'bootcamp')
 
-run_tutorial('git', package = 'bootcamp')
+# Introduction to git
+learnr::run_tutorial('git', package = 'bootcamp')
 
-run_tutorial('ggplot2', package = 'bootcamp')
+# Introduction to ggplot2
+learnr::run_tutorial('ggplot2', package = 'bootcamp')
 
-run_tutorial('markdown', package = 'bootcamp')
+# Introduction to markdown
+learnr::run_tutorial('markdown', package = 'bootcamp')
 
-run_tutorial('rmarkdown', package = 'bootcamp')
+# Introduction to R markdown
+learnr::run_tutorial('rmarkdown', package = 'bootcamp')
