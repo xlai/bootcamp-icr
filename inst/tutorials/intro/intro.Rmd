@@ -379,15 +379,16 @@ Ultimately, someone needs to write the package and make it available.
 ### Libraries of packages and CRCTU
 R installs packages to a _library_.
 The default library location is a sub-directory of the user's home path.
-Historically, this has created problems in CRCTU so we advise that you change that manually.
-The following steps can be run on your CRCTU machine to locate the R library to the C drive.
+Historically, this has created problems in CRCTU with packages that use C++ compilation like `rstan`.
+Other problems have arisen regarding use of our (networked) home drives.
+If you ever run into problems with the library location, you can change the location manually by following these steps:
 
 * Create the folder C:\\R\\Library.
 * Click Start --> Control Panel --> User Accounts --> Change my environmental variables.
 * The Environmental Variables window pops up. ...
 * Change or add the R_LIBS_USER variable so that it points to the directory that you created. 
 
-
+You will not need to do this on the RStudio Cloud instance we use for `bootcamp` or CRCTU's RStudio Server instance.
 
 ### Install a package from CRAN
 The primary source for R packages is CRAN.
@@ -402,8 +403,8 @@ Packages depend on other packages to perform tasks for them.
 This allows packages to specialise in precise tasks and avoids the need to reinvent the wheel many times.
 It does, however, create a network of package dependencies that can sometimes be overwhelming to behold.
 
-Exercise: what packages does the R package`lme4` rely on?
-Look up the CRAN page for `lme4`.
+**Exercise**: Look up the CRAN page for the `lme4` package. What packages does it rely on?
+
 
 If a package you are trying to install requires a newer version of a package dependency than that present on your system, it may try to upgrade without warning you.
 This might have adverse consequences for the reproducibility of previous analyses you have run.
@@ -412,11 +413,17 @@ Be aware of dependencies and try to anticipate whether upgrades will present a p
 Nevertheless, software moves relentlessly forwards and a pragmatic embracing of upgrades will often by inevitable.
 For example, how many apps have updated on your iOS or Android phone in the last week? 
 
-Exercise: What does the R package `MASS` do? When was the last version released? What changes did the last release bring? Install the package.
+**Exercise**: What does the R package `MASS` do? When was the last version released? What changes did the last release bring? Install the package.
 ```{r install-MASS, exercise = TRUE}
 
 ```
 
+You can test that `MASS` is now installed by running: 
+```{r library-MASS, exercise = TRUE}
+library(MASS)
+```
+
+If the package is present, this command should execute with no error.
 
 ### Install a package from GitHub
 In many instances, packages are available on GitHub as well as CRAN.
@@ -430,7 +437,7 @@ Execute the following:
 devtools::install_github('brockk/welcome')
 ```
 
-What function(s) does the package provide?
+What function(s) does the `welcome` package provide?
 Type `welcome::` in the dialogue below and autocomplete should suggest functions.
 Hit Return to accept the suggestion.
 What does the function do?
@@ -454,9 +461,10 @@ For instance, if the code in a package is sensitive and you do not want to share
 In fact, this is precisely the situation with the `crctu` package.
 It contains functions for performing common tasks at CRCTU like taking, saving and loading database snapshots.
 It also contains template RMarkdown reports for various tasks - we will encounter those later in bootcamp.
-For now, install the `crctu` package from zip file.
 
-Identify the most recent version at
+If you are within CRCTU's firewall, you can install the `crctu` package from zip file.
+
+Identify the most recent version at:
 
 > T:\\Code\\R\\Packages\\crctu_X.Y.Z.tar.gz
 
@@ -479,13 +487,6 @@ Let us recap some of what we have learned with a quiz.
 ```{r quiz, echo = FALSE}
 quiz(
   
-  question("Which types can be used to associate different values?",
-    answer("data.frame", correct = TRUE),
-    answer("character", correct = FALSE),
-    answer("vector", correct = TRUE),
-    answer("list", correct = TRUE)
-  ),
-  
   question("Vectors allow values of different types to be associated?",
     answer("FALSE", correct = TRUE),
     answer("TRUE", correct = FALSE)
@@ -496,7 +497,12 @@ quiz(
     answer("TRUE", correct = TRUE)
   ),
   
-  question("How would you remove unwanted rows in a data.frame using dplyr?",
+  question("Data-frames can contain columns of different types",
+    answer("FALSE", correct = FALSE),
+    answer("TRUE", correct = TRUE)
+  ),
+  
+  question("How would you remove unwanted rows in a data-frame using dplyr?",
     answer("summarise", correct = FALSE),
     answer("select", correct = FALSE),
     answer("filter", correct = TRUE),
