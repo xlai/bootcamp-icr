@@ -175,6 +175,57 @@ The following list is not exhaustive, but we expect that the following file-type
 * Snapshotted data-files  (`.rds`, `.dta`, `.csv`, `.xls`, `xlsx`)
 
 
+## Quiz
+
+Test your memory.
+Which of the following documents belong in the analysis directory?
+
+```{r quiz, echo = FALSE}
+quiz(
+  
+  question("DMC report",
+    answer("TRUE", correct = TRUE),
+    answer("FALSE", correct = FALSE)
+  ),
+  
+  question("Statistical analysis plan",
+    answer("TRUE", correct = FALSE),
+    answer("FALSE", correct = TRUE)
+  ),
+  
+  question("Data validation plan",
+    answer("TRUE", correct = FALSE),
+    answer("FALSE", correct = TRUE)
+  ),
+  
+  question("The results of invoking the checks described in the data validation plan",
+    answer("TRUE", correct = TRUE),
+    answer("FALSE", correct = FALSE)
+  ),
+  
+  question("Script used to take a database snapshot",
+    answer("TRUE", correct = TRUE),
+    answer("FALSE", correct = FALSE)
+  ),
+  
+  question("Email communication to show that it was OK to take a database snapshot",
+    answer("TRUE", correct = TRUE),
+    answer("FALSE", correct = FALSE)
+  ),
+  
+  question("Approved drafts of the case-report forms",
+    answer("TRUE", correct = FALSE),
+    answer("FALSE", correct = TRUE)
+  ),
+  
+  question("Ad-hoc script used to generate some data queries",
+    answer("TRUE", correct = TRUE),
+    answer("FALSE", correct = FALSE)
+  )
+)
+```
+
+
 ## Version control
 A core function of the analysis directory is to make it possible to version-control all analyses in a single over-arching directory.
 We do this using version-control software called git.
@@ -185,8 +236,15 @@ There will be a bootcamp session devoted to using git.
 Creating the standard analysis directory structure is scripted in Windows Powershell.
 Because of the potential havoc that could be wrought by executing scripts that tweak directory structure in an automated manner, the creation script is currently under restricted use.
 The creation script does more than make directories.
-If also instantiates a git repository, facilitating version control.
-For the time being, if you want to generate an analysis directory for a trial that does not already have one, please speak to Kristian.
+It also instantiates a git repository, facilitating version control.
+If you want to generate an analysis directory for a trial that does not already have one, please speak to Kristian.
+
+If you want to explore the folder structure, there is an example at 
+
+T:\FolderStructure\
+
+Please do not copy and paste this demo directory to create instances of an analysis directory because you will not get source control.
+Instead, chat to KB.
 
 
 ## Analysis tasks
@@ -207,9 +265,17 @@ Under this approach with version-control provided by git, the following sequence
 In this example, there were 5 analysis tasks.
 After each, the materials created pertaining to that particular task were added to source control provided by git.
 Files are layered onto the analysis heap in a meaningful, sensible order. 
-Any statistician picking up the trial on Day 25, for instance, would see that a DMC snapshot had been taken after some data queries were resolved, but that the report had not yet been created.
 
-### Summary
+Any statistician picking up the trial on Day 25, for instance, would see that a DMC snapshot had been taken after some data queries were resolved, but that the report had not yet been created.
+For this to work, commits to the repository must be made promptly, as soon as practicable after an analtsis task is completed.
+
+For instance, if the snapshot had not been committed on Day 23, any statistician peeking at this trial on Day 25 would not know about the snapshot.
+The danger is that they then unnecessarily replicate work.
+The lesson is to commit promptly.
+
+We will work through examples later in bootcamp.
+
+## Summary
 
 The analysis directory, twinned with source control, facilitates a modular or incremental analysis pathway with frequent meaningful checkpoints.
 This level of organisation will make it possible for any statistician to pick up any trial and make sense of where the trial has been, and more importantly, where it is headed.
@@ -220,25 +286,4 @@ If you work with Kristian at all, you will be using it.
 We will use it repeatedly during bootcamp.
 
 Welcome to CRCTU!
-
-## Quiz
-Throw in some quizes to check learning progress:
-
-```{r quiz, echo = FALSE}
-quiz(
-  
-  question("Which of the following are animals?",
-    answer("Cat", correct = TRUE),
-    answer("Petunia", correct = FALSE),
-    answer("Turmeric", correct = FALSE),
-    answer("Lizard", correct = TRUE)
-  ),
-  
-  question("Reviewers that demand p-values should be:",
-    answer("Rewarded with cuddles.", correct = FALSE),
-    answer("Fired into the sun.", correct = TRUE)
-  )
-)
-```
-
 

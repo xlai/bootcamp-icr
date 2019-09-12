@@ -69,24 +69,50 @@ Bootcamp sessions could possibly take place in many locations:
 * Murray Learning Centre
 * Med school
 
-### Resources
-CRCTU's business is medical experiments on human beings. Rightly, that is a highly regulated activity and the integrity of our IT systems is very important. We keep data a) in databases and b) on file servers that sit within the CRCTU firewall. Where we are conducting a bootcamp session will impact which of these resources, if any, we can access. Thus, some exercises will be location-dependent. Please bear in mind that it has not been possible to plan venues completely in advance.
+## CRCTU Systems
+CRCTU's business is medical experiments on human beings. 
+Rightly, that is a highly regulated activity and the integrity of our IT systems is very important. 
+We keep data a) in databases and b) on file servers that sit within the CRCTU firewall. 
+Where we are conducting a bootcamp session will impact which of these resources, if any, we can access. 
+Thus, some exercises will be location-dependent. 
+Please bear in mind that it has not been possible to plan venues completely in advance.
 
 ### Resources within Venues
 In RAICR, we can access databases and file-servers. ITM is a local trusted zone. If you are in the ITM, using your CRCTU login you are effectively in RAICR.
 
 Other venues on campus like the med school, Murray Learning Centre and the library sit outside the CRCTU firewall. From these locations, you will not be able to access our databases or file servers unless you use a remote desktop session to a machine inside the CRCTU firewall. 
+You can actually connect by remote desktop from anywhere onece you have registered for remote access.
 
+### Resources and bootcamp
 As much as possible, the sessions have been designed so that they can be taught anywhere. Obviously, this means creating exercises that do not require CRCTU resources. However, there are naturally activities that do require CRCTU resources so these will only be possible inside RAICR or ITM (or via remote desktop).
 
-### Running Bootcamp Sessions
-The bootcamp sessions taken by Kristian will be provided as tutorials in an R package called bootcamp. You will be able to run these within any RStudio session, including:
+## Quiz
+Let's check if this is going in.
+
+```{r quiz, echo = FALSE}
+quiz(
+  
+  question("By logging in from which locations could you expect to access CRCTU's file server?",
+    answer("The library", correct = FALSE),
+    answer("RAICR", correct = TRUE),
+    answer("The ITM", correct = TRUE),
+    answer("The Murray Learning Centre", correct = FALSE),
+    answer("Using remote desktop from the Murray Learning Centre", correct = TRUE),
+    answer("Using remote desktop from home", correct = TRUE)
+  )
+)
+```
+
+## The bootcamp package
+The bootcamp sessions taken by Kristian will be provided as tutorials in an R package called bootcamp. 
+You will be able to run these within any RStudio session, including:
 
 *	on an RStudio Cloud instance Kristian set up for this training at https://rstudio.cloud/project/454702
 * on CRCTU's RStudio Server instance running at https://can-rserver-01.bham.ac.uk/
 * on your own computer
 * on your work computer
 
+### Installing R at UoB
 To install R and RStudio on any UoB computer:
 
 * Hit the Windows Start key
@@ -96,12 +122,23 @@ To install R and RStudio on any UoB computer:
 * This takes a few minutes to install R, RStudio, Rtools, and a bunch of common packages. 
 This bundle is super convenient.
 
+### Installing R on your own computer
+
+You just need to install R and RStudio.
+They are two different installs.
+Installing each on Windows or Mac simply requires running the installers.
+Installing on Linux is a little more involved.
+If you ever want help with this, just say.
+
+### Installing bootcamp 
 To install the bootcamp package on your computer, work computer, or CRCTU's RStudio Server instance (n.b. you do not need to install it on the RStudio Cloud instance):
 
 * Open RStudio
 * Check that the devtools package is present by running `library(devtools)`. If an error is raised, install devtools by running the command `install.packages('devtools')` 
 *	Run the command `devtools::install_github('brockk/bootcamp')`
 
+### Running tutorials
+The bootcamp sessions are provided as *tutorials*.
 With `bootcamp` installed, to run a tutorial:
 
 * Open Rstudio
