@@ -241,7 +241,7 @@ If you want to generate an analysis directory for a trial that does not already 
 
 If you want to explore the folder structure, there is an example at 
 
-T:\FolderStructure\
+T:\\FolderStructure\\
 
 Please do not copy and paste this demo directory to create instances of an analysis directory because you will not get source control.
 Instead, chat to KB.
