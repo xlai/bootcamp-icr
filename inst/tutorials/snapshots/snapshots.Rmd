@@ -1,0 +1,354 @@
+---
+title: "Database snapshots in R"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE, eval = TRUE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
+
+# Any setup R code can go here
+library(dplyr)
+# Etc
+```
+
+
+## Welcome
+
+This tutorial shows you how to work with database snapshots in R at CRCTU.
+
+### Learning Objectives
+Upon completion of this session, you will be able to:
+
+* take a new database snapshot
+* save it to the file system
+* load a previously-saved snapshot from the file system
+
+
+## Introduction
+
+A trial database is constantly in flux.
+Staff at sites can add data at any time from anywhere via a web interface.
+We have already stressed that we desire reproducibility in our analyses.
+To provide a static glimpse of the transient trial dataset, we take a _snapshot_.
+This simply means saving a copy of the database to files on a file server.
+
+At CRCTU, to facilitate analysis, we are provided _stats views_ by our programming team.
+These contain the data we need and database management fields to convey to us facts about the data, like whether values were imputed.
+A view is essentially a spreadsheet of data.
+Whilst there are many ways in which snapshots might vary, taking a snapshot usually entails, for each view, loading all of the data in the view and saving it as a file with an appropriate name.
+
+An analysis generally starts with a snapshot.
+We take snapshots on which to conduct data checks.
+Once queries have been addressed, we take another snapshot on which to perform the analysis.
+This process is arranged by the trial coordinator and trial statistician, and documented by the trial statistician.
+
+It is in CRCTU's SOPs that outcome data will be checked before it is analysed.
+It is permissable and sometimes desirable to not take a snapshot if a clean one was recently taken for some other purpose.
+For instance, if after data queries were resolved, an analysis snapshot was taken for a DMC in July, it could be desirable to write an abstract in August based on the July snapshot rather than taking a new snapshot that would necessitate new data cleaning.
+Judgement is needed.
+If you are unsure, discuss it with your trials team or senior statistician.
+
+
+## The `crctu` package.
+The `crctu` R package contains functions and templates that make it simple to work with database snapshots.
+We covered in the `intro` bootcamp session how to install the `crctu` package.
+Revise that session if you need to.
+For now, we will assume that `crctu` is available.
+
+## Taking a snapshot
+For testing, we will work with the `TACE2StatsInduction` database on the `CAN-SQL-03` server.
+As the name suggests, this database has been set up for stats induction and training.
+
+We will require the `crctu` package:
+
+```{r}
+library(crctu)
+```
+
+The R function for taking a database snapshot is `load.from.database`.
+To take a snapshot, we could run:
+
+```{r}
+views <- load.from.database(database = 'TACE2StatsInduction', 
+                            server = 'CAN-SQL-03')
+```
+
+If you are operating within the CRCTU firewall, you can run this command now.
+The returned object is an R-environment, which behaves just like a `list`
+Textual labels identifying the name of the SQL object point to instances of `data.frame` that contain the data.
+Check the contents of your returned `views` object by running:
+
+```{r}
+ls(views)
+```
+
+You should see a series of names.
+These are the names that the views take in the SQL Server database.
+To access one of views, you index the `views` object with double square brackets and the textual name of the view, as in:
+
+```{r}
+death <- views[['vwStatsDeath']]
+pat <- views[['vwStatsPatient']]
+```
+
+R is very different to Stata in that you can work with any number of datasets at the same time.
+In the above example, both the `death` and `pat` objects are retained in memory and available for analysis without further drama.
+
+By default, the `load.from.database` function connects to the live CRCTU database server `CAN-SQL-01`.
+We had to override this behaviour via the `server` parameter to use the training and testing server `CAN-SQL-03`.
+If the database we sought was on the live server, we could simply have run code like:
+
+```{r}
+views <- load.from.database(database = 'TrialName')
+```
+
+The function sets other default parameter values.
+Further details are in the help file.
+Check the help file by running:
+
+```{r}
+? load.from.database
+```
+
+There are two parameters that we will discuss further.
+
+### SAEs in CAS 
+CAS is the name of the central CRCTU database in which information on serious adverse events (SAEs) are stored for all trials.
+If you specify the `cas.database` parameter in a call to `load.from.database`, the function will extract information on SAEs for your trial and add them to the returned `views` object.
+The three views containing SAE information are:
+
+* `vwStatsSAE`
+* `vwStatsSAESymptoms`
+* `vwStatsSAETreatments`
+
+The content of these views will be the subject of another bootcamp session.
+
+An unfortunate complication is that the CAS names of trials often do not match the name of the trial database.
+For instance, the name of the TACE2 trial in CAS is `TACE-2` - the hyphen matters.
+
+We have written a function to help search for trial names in CAS.
+Let us imagine that we want to take a snapshot for the PePS2 trial, we want information on SAEs included, but we are unsure about how PePS2 is named in CAS.
+We could investigate with:
+
+```{r}
+get.trial.code('pep', soft.match = TRUE)
+```
+
+The `soft.match` parameter ensures we get partial matches.
+Run this command.
+The results confirm that there are two trials with `pep` in the title, and that PePS2 is indeed called `PePS2` in CAS.
+With this knowledge, we can take our complete snapshot with the command:
+
+```{r}
+views <- load.from.database(database = 'PePS2', cas.trial.name = 'PePS2')
+```
+Note that this command would connect to the live databases so it will only work if you have read access to PePS2, which most of you will not.
+The above usage shows how you can get SAE data in your snapshots on the live systems.
+
+
+### Objects query
+To tailor which objects are included in a snapshot, you can set the `objects.query` parameter.
+You may have noticed in the call to `ls(views)` above that most objects start with `vwStats` but some do not.
+To exclude these seemingly extraneous views, you could run:
+
+```{r}
+objects.query = "SELECT name FROM sys.views WHERE name LIKE 'vwStats%'"
+views3 <- load.from.database(database = 'TACE2StatsInduction', 
+                             objects.query = objects.query,
+                             server = 'CAN-SQL-03')
+ls(views3)
+```
+
+Run this on your machines.
+You will see now that only the stats views are included.
+This flexible method can be used to include database tables in snapshots as well as views.
+If you ever need to do this and cannot work out how, ask Kristian.
+
+
+### What now?
+You have taken a snapshot - so what now?
+You have to save it somewhere.
+That is the topic of the next section.
+
+
+
+## Saving a snapshot
+With a snapshot of views held in memory, you can save the views to the file system.
+This ensures the data is crystallised and available at a later date.
+Once again, we provide a function to make saving a set of views relatively simple.
+
+We will work in instances of the analysis directory set up for bootcamp training.
+Mine is in
+
+`T:/Training/New starters/BootCamp/2019/Attendees/Kristian/Analysis/`
+
+There are similar directories for each of the confirmed bootcamp attendees.
+All paths presented henceforth will be in relation to your analysis directory.
+
+Let us imagine that the object `views` in memory is a snapshot we are taking on which to run data checks in preparation for a DMC meeting that will be help on 2019-10-31.
+Let us also assume that no work has yet been done on this task so that we are starting from a clean slate.
+
+Follow these steps:
+
+1. Create a directory for the DMC by copying `DMC/YYYY-MM-DD` to `DMC/2019-10-31`. Copying rather than creating a new blank directory will bring across all the subdirectory structure we need. The easiest way to do this is via Windows Explorer.
+2. Create a directory for the snapshot by copying `DMC/2019-10-31/DataValidation/Snapshot/YYYY-MM-DD` to `DMC/2019-10-31/DataValidation/Snapshot/2019-10-14`. Again, copying the template directory brings substructure that we will need. Note that there are two dates in the path. The first pertains to the date of the meeting; the second the date of the snapshot. Please always try to mimic this behaviour with the snapshot date accurately reflecting the age of the data and the outer date reflecting the date we are working towards. It is common for there to be several snapshots pertaining to a task.
+3. Run the following command to save the data to the `DMC/2019-10-31/DataValidation/Snapshot/2019-10-14/Data` directory, being mindful to change my name for yours:
+
+```{r}
+out_root <- 'T:/Training/New starters/BootCamp/2019/Attendees/Kristian/Analysis/'
+out_stem <- 'DMC/2019-10-31/DataValidation/Snapshot/2019-10-14/Data/'
+out_path <- paste0(out_root, out_stem)
+write.environment(views, out_path)
+```
+
+The command will take a few moments to run.
+
+The first three lines above simply define the output path.
+The last line writes the contents of `views` to `out_path`.
+Browse there now and take a look.
+What do you see?
+How many files are there?
+How many did you expect?
+
+CRCTU SOPs state that a statistician will have permission from the trial management team to take a snapshot.
+The analysis directory structure provides the `Agreement` directory to save this permission.
+Under normal usage, this amounts to copying an email in Outlook and pasting it into the directory.
+For this example, mimic permission by creating a text file at `DMC/2019-10-31/DataValidation/Snapshot/2019-10-14/Agreement/PermissionGranted.txt` containing whatever content you wish.
+
+There is one final directory to note.
+The `Queries` directory is for storing a copy of any data queries generated.
+We will skip that step for now because data cleaning is the topic of a future bootcamp session.
+
+Let us recap:
+
+1. You have taken a snapshot and written it to the file system.
+2. You have logged "permission" to do so.
+
+Under the task-based umbrella extolled in earlier bootcamp sessions, we have now completed the major task of taking a snapshot for data cleaning in advance of a DMC meeting.
+Now is a sensible moment to commit our progress to git.
+
+Follow these steps to commit and push in git:
+
+1. Within the Git pane in RStudio, select the checkbox next to the `DMC/` item, and anything else you want to commit.
+After a moment, the pane will expand all of the content below `DMC/` with green A icons indicating that new content is added to the index.
+2. Click commit.
+3. In the dialogue box, enter the commit message "Snapshot for data cleaning prior to DMC."
+4. Click Commit. This should confirm that many files were created in the remote. CLick Close. The dialogue box should now have a message saying your branch is 1 commit ahead of origin/master. 
+5. Click Push. A message should confirm success. Click Close.
+6. To check our progress, click History. This should contain information on the commit you just completed.
+
+Once in git, our data snapshot is preserved for posterity.
+However, we have not recorded the code that we ran. 
+This exercise served to illustrate the mechanics of taking and recording a snapshot. 
+However, in the next section we will learn how to do all of these steps again in a fully documented way that should be the defautl approach in R.
+
+## A reproducible research approach to taking a snapshot
+In the last section we took a snapshot for a putative round of data cleaning.
+Let us now assume that data cleaning has been completed, all queries resolved, and that the trials team have invited you to take another snapshot for the full analysis.
+We will do this in a fully documented way using a template in the `crctu` package that should be considered the default behaviour in R.
+
+1. As before, prepare a directory for the snapshot by copying `DMC/2019-10-31/Snapshot/YYYY-MM-DD` to `DMC/2019-10-31/Snapshot/2019-10-14`.
+We assume that our trials team is so efficient that they somehow resolved all data queries the day they were raised.
+2. Now in RStudio click `File -> New File -> R Markdown`. 
+3. Within the dialogue box, select `From Template` and select `Take Database Snapshot {crctu}` from the list. Click OK.
+4. Alter the title and author in the YAML header to take sensible values.
+5. Save the resulting file at `DMC/2019-10-31/Snapshot/2019-10-14/TakeSnapshot.Rmd`.
+
+We will use this template to take and save a snapshot and document the process.
+
+The first two R chunks need a little attention to work in our scenario.
+The others are fine, by default.
+Follow these steps:
+
+1. Change the first chunk under Prerequisites to say simply `library(crctu)`. The `source` commands are out of date. Evaluate this chunk.
+2. Change the second chunk to say:
+
+```{r}
+views <- load.from.database(database = 'TACE2StatsInduction', 
+                            server = 'CAN-SQL-03')
+```
+
+Evaluate this chunk. Naturally, all the parameters previously discussed apply here too.
+
+3. Evaluate the third chunk. This will print the names of the views included in the snapshot. This is beneficial for audit purposes.
+4. The fourth chunk writes the view using the function we already used. Notice in this instance that the `outdir` simply takes the value `Data/`. This is because R Markdown (Rmd) files automatically set the working directory to be the directory of the file. In circumstances like this, that is very useful because it removes a lot of nuisance detail in the specification of the output directory. Execute this chunk. Check that your files have been written to `DMC/2019-10-31/Snapshot/2019-10-14/Data/`.
+5. Run the fifth chunk to list the contents of the snapshot directory. This proves that the files were written and is again valuable in the event of an audit.
+6. Run the last chunk to record information on the R session, including version numbers.
+7. Save the Rmd file.
+8. Because the Rmd outputs to `html_notebook` format, a html rendering is created each time the file is save. Load the file `DMC/2019-10-31/Snapshot/2019-10-14/TakeSnapshot.nb.html` in a web browser.
+
+You have taken a snapshot and fully documented the process.
+Once again, follow these steps to commit to git:
+
+1. Within the Git pane in RStudio, select the checkbox next to items you want to commit.
+After a moment, the pane will expand all of the contents with green A icons indicating that new content is added to the index.
+2. Click commit.
+3. In the dialogue box, enter the commit message "Snapshot for DMC analysis."
+4. Click Commit. This should confirm that many files were created in the remote. CLick Close. The dialogue box should now have a message saying your branch is 1 commit ahead of origin/master. 
+5. Click Push. A message should confirm success. Click Close.
+6. To check our progress, click History. This should contains information on both of your commits.
+7. Celebrate in a way consistent with your locale.
+
+## Loading a snapshot
+We do not take snapshots merely to marvel their beauty; we take them because we intend to use them.
+This section addresses methods to load and work with a snapshot in R.
+
+As before, we have a function to restore a saved snapshot from the file server.
+In the previous section you saved a snapshot to `DMC/2019-10-31/Snapshot/2019-10-14/Data/`.
+We can load it using:
+```{r}
+load_root <- 'T:/Training/New starters/BootCamp/2019/Attendees/Kristian/Analysis/'
+load_stem <- 'DMC/2019-10-31/Snapshot/2019-10-14/Data/*.rds'
+load_path <- paste0(load_root, load_stem)
+views <- load.from.directory(load_path, format = 'RDS')
+```
+
+Load your snapshot now, being mindful to swap my name for yours.
+Did it succeed?
+Check the contents of the loaded object by running
+```{r}
+ls(views)
+```
+
+You should receive the same list of view names as before.
+
+The first three lines of the load chunk define the rather convoluted file path.
+Notice that `load_stem` uses the `*` wild-card character to convey that we want to load any file that has the `rds` extension.
+The `load.from.directory` function also supports loading Stata dta files (both pre- and post version 13, when the Stata format changed) and csv files.
+To do so, both the load pattern and `format` parameter have to be updated.
+For more details, see:
+```{r}
+? load.from.directory
+```
+
+
+### Side project for a wannabe programmer
+
+It is somewhat regrettable that you are required to specify `rds` and `RDS` in two places (with differing capitalisations too).
+A beneficial coding project for someone to undertake would be to fix this so that `format` is inferred if the load pattern ends with a file extension.
+A complication is that the load pattern need not necessarily end in an extension.
+
+### Loading from an R Markdown file
+R Markdown files set the workding directory to be the directory in which the markdown file resides.
+Thus, the file pattern to load a snapshot can be much more succinct in an `Rmd` file.
+In our DMC example, I would probably put `Analysis.Rmd` in `DMC/2019-10-31/`.
+This would allow me to load the dataset and alias the views I expect to use in the `setup` chunk using something like:
+
+```{r}
+library(crctu)
+
+views <- load.from.directory('Snapshot/2019-10-14/Data/*.rds', format = 'RDS')
+
+death <- views[['vwStatsDeath']]
+pat <- views[['vwStatsPatient']]
+# etc
+```
+
+That concludes this session on snapshots in R.
+Please use what you have learned in your trials.
+A trials unit as large as ours requires some standardisation in its methods.
+

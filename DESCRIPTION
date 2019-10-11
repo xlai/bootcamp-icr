@@ -1,7 +1,7 @@
 Package: bootcamp
 Type: Package
 Title: Bootcamp Training Materials for CRCTU Statisticians
-Version: 0.1.0
+Version: 0.1.1
 Author: Kristian Brock
 Maintainer: Kristian Brock <kristian.brock@gmail.com>
 Description: Bootcamp training materials for CRCTU clinical trial statisticians.

@@ -60,11 +60,14 @@ RStudio, click the red Stop button in the Console pane.
 Tutorials currently available (i.e. valid substitutions for `intro`
 above) are:
 
+  - `bootcamp`
   - `intro`
   - `folders`
   - `git`
   - `ggplot2`
   - `markdown`
+  - `rmarkdown`
+  - `snapshots`
 
 More are coming.
 

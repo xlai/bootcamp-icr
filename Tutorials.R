@@ -35,3 +35,6 @@ learnr::run_tutorial('markdown', package = 'bootcamp')
 
 # Introduction to R markdown
 learnr::run_tutorial('rmarkdown', package = 'bootcamp')
+
+# Working with database snapshots in R
+learnr::run_tutorial('snapshots', package = 'bootcamp')
