@@ -1,0 +1,231 @@
+---
+title: "Repeated Measures"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+# Etc
+
+```
+
+
+## Welcome
+
+This tutorial introduces some simple model-based approaches for analsying the kind of repeated measures data we generally encounter in clinical trials.
+
+### Learning Objectives
+Upon completion of this session, you will be able to:
+
+* fit a random intercepts hierarchical model;
+* fit a random gradients hierarchical model.
+
+## Repeated measures data in clinical trials
+
+Repeated measures data arise in a number of ways in clinical trials:
+
+* tumour size assessments, e.g. RECIST
+* biological and biochemical variables, e.g. albumin, neutrophils
+* quality-of-life measures, e.g. EQ5D
+
+The measurements tend to be continuous; indeed each of the examples above is continuous.
+However, that need not be a constraint.
+You could very well encounter repeated measures of binary, ordinal and count variables.
+The methods introduced in this session will generalise to those circumstances, but the details lay outside the scope of today's material.
+
+## Hierarchical models
+
+There are many methods for analysing repeated measures data.
+A good textbook is _Analysis of Longitudinal Data_ by Diggle, Liang and Zeger.
+
+In this session, we will focus on hierarchical models.
+These are also sometimes called:
+
+* mixed effects models
+* random effects models
+* multi-level models
+
+The first two labels have been criticised by Gelman & Hill (and others) because they are ambiguous.
+We will try to use the names _hierarchical_ or _multi-level_ models.
+
+These approaches are so-called because they specify:
+
+* a model for the data
+* a model for the parameters
+
+### Model for the data
+For instance, you would have encountered at university models like:
+
+$$ y_i = \alpha + a_i + \beta x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^2)$$
+
+This statment specifies the model for the outcome or data, $y$, conditional on parameters and covariates.
+
+We see that the expected value for $y$ takes an element, $\alpha$, common to all subjects.
+This is referred to as the _population-level intercept_.
+
+The expected value for $y$ also contains a further element, $a_i$.
+These are specific to each subject, hence the $i$ subscript, and are referred to as the _group-level intercepts_.
+Strictly speaking, they are the group-level intercepts _at the subject level_ because there can be other group-level effects.
+
+Lastly, the expected value for $y$ contains an element that scales the covariate $x$ by an amount $\beta$.
+This is referred to as the _population-level gradient_, with the fact that it pertains to the $x$-variable being understood implicitly but frequently unvoiced.
+
+In nomenclature we do not encourage, you will see $\alpha$ and $\beta$ referred to as _fixed effects_, and $a_i$ referred to as _random effects_.
+The above terms, population-level and group-level effects, are preferable.
+
+
+### Model for the parameters
+
+The above model specification is incomplete because it makes no statement about the parameters, $a_i$.
+
+A typical model in this scenario might be:
+
+$$a_i \sim N(0, \sigma_a^2)$$
+
+It is appropriate to fix the expected value of $a_i$ to be zero because the population-level covariate-invariant mean effect is handled by $\alpha$.
+Put another way, if the expected value of $a_i$ was non-zero, the value could be subsumed into $\alpha$.
+
+It is the provision of a model for the parameters that warrants the descriptors _hierarchical_ or _multi-level_.
+
+## Hierarchical models in R
+
+There are several R packages that will fit hierarchical models.
+
+Using a frequentist approach, the two most noteworthy packages are `nlme` and `lme4`.
+`nlme` is older.
+It fits models with continuous response variable using the identity link function and assuming gaussian errors.
+`lme4` also fits models for continuous responses.
+It adds support for binary outcomes using the logit link, and count variables using the log link.
+
+Using a Bayesian approach, the packages `rstanarm` and `brms` fit hierarchcial models of all response types via Stan, an incredibly powerful and flexible MCMC library.
+Stan will be the focus of a later bootcamp session.
+
+This is not an exhaustive list.
+
+
+
+## Model fitting
+In this section, we fit various models to the `tumours` dataset in the `bootcamp` package.
+The dataset contains repeated measures within patient of tumour-sizes in a two arm RCT.
+Initially we will ignore treatment arm.
+
+To refresh your memory, the data look like this:
+```{r}
+library(bootcamp)
+library(dplyr)
+library(ggplot2)
+
+tumours %>% 
+  ggplot(aes(x = Time, y = TumourSize)) + 
+  geom_point() + 
+  geom_line(aes(group = TNO), alpha = 0.1) -> p
+
+p
+```
+
+We see 
+
+
+
+### Linear model
+
+```{r}
+library(broom)
+```
+
+```{r, fig.width = 10}
+lm0 <- lm(TumourSize ~ 1 + Time, data = tumours)
+summary(lm0)
+augment(lm0)
+p + geom_line(
+  aes(y = .fitted), 
+  data = augment(lm0) %>% distinct(Time, .fitted)
+)
+```
+
+
+### Random intercepts models
+
+The random intercepts model was specified in a previous section:
+
+$$ y_i = (\alpha + a_i) + \beta x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^2)$$
+
+$$a_i \sim N(0, \sigma_a^2)$$
+
+```{r}
+library(nlme)
+```
+
+
+```{r, fig.width = 9, fig.height = 10}
+lme0 <- lme(fixed = TumourSize ~ 1 + Time, 
+            random = ~ 1 | TNO, 
+            data = tumours)
+summary(lme0)
+ranef(lme0)
+augment(lme0)
+p + 
+  geom_line(aes(y = .fitted, group = TNO), data = augment(lme0), col = 'red') +
+  facet_wrap(~ TNO, ncol = 10)
+```
+
+
+
+### Random gradients models
+
+The random gradiants model takes the random intercepts model and adds group-level gradients:
+
+$$ y_i = (\alpha + a_i) + (\beta + b_i) x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^2)$$
+
+$$a_i \sim N(0, \sigma_a^2), \quad b_i \sim N(0, \sigma_b^2)$$
+
+```{r, fig.width = 9, fig.height = 10}
+lme1 <- lme(fixed = TumourSize ~ 1 + Time, 
+            random = ~ 1 + Time | TNO, 
+            data = tumours)
+summary(lme1)
+ranef(lme1)
+augment(lme1)
+p + 
+  geom_line(aes(y = .fitted, group = TNO), data = augment(lme1), col = 'red') +
+  facet_wrap(~ TNO)
+```
+
+`lme1` is nested within `lme0`, in that `lme0` is a special case of `lme1` with all $b_i$ set to zero.
+
+```{r}
+anova(lme0, lme1)
+```
+
+
+
+## Other stuff
+Set an exercise:
+```{r exercise1, exercise = TRUE}
+
+```
+
+Set an exercise where you start the example:
+```{r exercise2, exercise = TRUE}
+mtcars %>% 
+  filter(mpg < 20)
+
+```
+
+Set an exercise where you provide a hint:
+```{r exercise3, exercise = TRUE}
+
+```
+```{r exercise3-hint}
+mtcars %>% 
+  filter(mpg < 20) %>% 
+  group_by(cyl) %>% 
+  summarise(mean(hp))
+```
+

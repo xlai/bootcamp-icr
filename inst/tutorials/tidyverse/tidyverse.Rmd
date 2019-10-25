@@ -1,0 +1,252 @@
+---
+title: "More tidyverse"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+# Etc
+```
+
+
+## Welcome
+
+This tutorial introduces further elements of the `tidyverse` suite of packages, specifically `dplyr`, `tidyr` and `lubridate`.
+
+### Learning Objectives
+Upon completion of this session, you will:
+
+* Be able to use different types of join in `dplyr`;
+* Be able to reshape data using `tidyr`;
+* Be able to calculate the time between two dates using `lubridate`.
+
+
+## Joins in `dplyr`
+
+Joins combine two datasets together by matching one or more columns in both the left- and right-hand objects, returning the pooled set of columns.
+Thus, one way to interpret a join is an operation that can make a dataset wider by adding more columns.
+For instance, we already used joins in an earlier bootcamp session to create spider plots.
+
+Let us remind ourselves of the `tumours` dataset:
+```{r}
+library(bootcamp)
+library(dplyr)
+
+tumours %>% head()
+```
+
+In the spider plot exercise, we joined `tumours` to a subset of itself to add the baseline tumour size to all records.
+This allowed us to calculate change-from-baseline at all timepoints.
+
+In addition to `tumours`, the `bootcamp` package also contains a `patients` dataset containing qualitative information on patients in a putative trial:
+
+```{r}
+patients %>% head()
+```
+
+Notice that both datasets contain a `TNO` record?
+To join `tumours` to `patients`, we can run:
+
+```{r}
+tumours %>% 
+  inner_join(patients, by = 'TNO')
+```
+
+Here we used `inner_join` to join the left-hand side (LHS) `tumours` to the right-hand side (RHS) `patients`, via the _join key_ `TNO`.
+There are actually several different types of join:
+
+* an `inner_join` returns the set of records where the key is present in both the LHS and RHS;
+* a `left_join` returns all records in LHS, adding values from the RHS where a key match is available or a row of `NA` values where no match is available;
+* a `right_join` returns all records in RHS, adding values from the LHS where a key match is available or a row of `NA` values where no match is available;
+* a `full_join` returns all records in the LHS and RHS, adding values from the other side where a key match is available or a row of `NA` values where no match is available;
+* a `semi_join` returns all records in the LHS where a key match is available in the RHS, retaining only the columns in the LHS;
+* an `anti_join` returns all records in the LHS where no key match is available in the RHS, retaining only the columns in the LHS;
+
+Notice that:
+
+* An inner-join is like the intersection of two sets;
+* An outer-join is like the union of two sets;
+* left and right joins are a way of nominating a master set of records;
+* semi- and anti-joins can be interpreted as ways of filtering; 
+* semi- and anti-joins bring no extra variables;
+* semi- and anti-joins are opposites
+
+All of these joins use the pattern:
+
+```{r, eval=FALSE}
+lhs %>% 
+  join(rhs, by = 'Key')
+```
+
+Write a join to return patients with no tumour measurement:
+```{r exercise1, exercise = TRUE}
+
+```
+
+Sometimes the join key may have different names in the LHS and RHS.
+When this happens, use:
+
+```{r, eval=FALSE}
+lhs %>% 
+  join(rhs, by = c('ColInLHS' = 'ColInRHS'))
+```
+
+Sometimes the join key may include several columns.
+When this happens, use:
+
+```{r, eval=FALSE}
+lhs %>% 
+  join(rhs, by = c('Col1InLHS' = 'Col1InRHS',
+                   'Col2InLHS' = 'Col2InRHS'))
+```
+
+
+
+## Reshaping data using `tidyr`
+
+The `tidyr` package provides many useful functions with reshaping and tidying data.
+The two functions we will learn about in this session convert between wide and tall data formats.
+
+### Tall to wide
+
+The `tumours` dataset is said to be _tall_ because each row pertains to exactly one measurement event.
+This data format is require by `ggplot` to produce plots, and functions in R to fit linear models like $$TumourSize = \alpha + \beta Time + \epsilon$$.
+
+Although computers prefer the tall format, humans tend to prefer the _wide_ format, where 
+
+This can be created using the `spread` function in the `tidyr` package:
+
+```{r}
+library(tidyr)
+
+tumours %>% 
+  spread(Time, TumourSize)
+```
+
+This commands says:
+
+* create a column for each value of `Time`
+* containing the values in `TumourSize`
+* whilst treating all other columns as fixed.
+
+If you were asked to tabulate the raw values by patient, this would likely be much more useful to a reviewer than the tall format.
+For instance, we can immediately observe by looking across the rows that most patients have tumour shrinkage.
+
+Thus, `spread` takes you from tall to wide data.
+
+As an exercise, reproduce the following tabulation of the mean tumour size by `Arm` and `Time` using the `group_by`, `summarise` and `spread` commands:
+
+```{r, echo = FALSE}
+tumours %>% 
+  group_by(Arm, Time) %>% 
+  summarise(MeanSize = mean(TumourSize)) %>% 
+  spread(Time, MeanSize)
+```
+
+```{r exercise3, exercise = TRUE}
+
+
+
+```
+
+### Wide to tall
+The opposite problem concerns going from a wide to a tall format.
+This frequently occurs when researchers send you data to analyse.
+They will generally have recorded data in a spreadsheet in the wide format, like this:
+
+```{r}
+tumours %>% 
+  spread(Time, TumourSize) -> tumours_wide
+
+tumours_wide
+```
+
+To visualise or analyse the data, you will likely have to convert it from wide to tall format first.
+To do this, use the `gather` funciton in `tidyr`:
+
+```{r}
+tumours_wide %>% 
+  gather(Time, TumourSize, -TNO, -Arm)
+```
+
+This command says:
+
+* take the column headers from `tumours_wide` and create a new column called `Time`
+* insert the table values into a new column called `TumourSize`
+* treat `TNO` and `Arm` as identity fields that should not be stacked.
+
+
+
+## Working with dates in `lubridate`
+
+`lubridate` is a package in `tidyverse` that aims to take the pain out of working with dates in R.
+
+```{r}
+library(lubridate)
+```
+
+You can calculate the duration of time between two dates by using the `interval` function:
+```{r}
+patients %>% 
+  mutate(AgeAtReg = interval(DateOfBirth, DateOfReg))
+```
+
+Notice how the `AgeAtReg` variable is not yet telling us anything useful?
+It is in the default format of an interval.
+What we actually want is the number of years in that interval.
+To do that, we divide the interval by a single year:
+
+```{r}
+patients %>% 
+  mutate(AgeAtReg = interval(DateOfBirth, DateOfReg) / years(1))
+```
+
+Ages are one of the few variables that are generally always rounded downwards.
+Hence, if you had asked each of these patients at their regostration "How old are you?", they would have replied:
+
+```{r}
+patients %>% 
+  mutate(AgeAtReg = floor(interval(DateOfBirth, DateOfReg) / years(1)))
+```
+
+You can create a date object from a string using the `ymd` parser function:
+
+```{r}
+halloween <- ymd('2019-10-31')
+class(halloween)
+halloween
+```
+
+Mutate the `patients` dataframe to show the number of days between Halloween and the date each patient registered:
+```{r exercise4, exercise = TRUE}
+
+
+
+```
+
+Calculate the median interval by `StarSign`, in days:
+```{r exercise5, exercise = TRUE}
+
+
+
+
+
+```
+
+What is the median follow-up for Geminis?
+
+
+There are lots more useful functions offered by the `dplyr`, `tidyr` and `lubridate` packages.
+This session introduced methods to perform three very common tasks:
+
+* joining datasets
+* transitioning between wide and tall data formats
+* and calculating length of time intervals
+
+There are also lots more useful packages in the `tidyverse`.
+Keep exploring.
