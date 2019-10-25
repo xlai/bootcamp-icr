@@ -10,7 +10,9 @@ library(learnr)
 knitr::opts_chunk$set(echo = TRUE)
 
 # Any setup R code can go here
-# Etc
+library(dplyr)
+library(tidyr)
+library(lubridate)
 ```
 
 

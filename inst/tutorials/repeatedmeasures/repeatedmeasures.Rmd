@@ -11,8 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Any setup R code can go here
 library(dplyr)
-# Etc
-
+library(bootcamp)
 ```
 
 
@@ -64,7 +63,8 @@ For instance, you would have encountered at university models like:
 
 $$ y_i = \alpha + a_i + \beta x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^2)$$
 
-This statment specifies the model for the outcome or data, $y$, conditional on parameters and covariates.
+where $i$ indexes study subjects.
+This statement specifies the model for the outcome data, $y$, conditional on parameters and covariates.
 
 We see that the expected value for $y$ takes an element, $\alpha$, common to all subjects.
 This is referred to as the _population-level intercept_.
@@ -99,7 +99,7 @@ There are several R packages that will fit hierarchical models.
 
 Using a frequentist approach, the two most noteworthy packages are `nlme` and `lme4`.
 `nlme` is older.
-It fits models with continuous response variable using the identity link function and assuming gaussian errors.
+It fits models with a continuous response variable using the identity link function assuming gaussian errors.
 `lme4` also fits models for continuous responses.
 It adds support for binary outcomes using the logit link, and count variables using the log link.
 
@@ -129,25 +129,41 @@ tumours %>%
 p
 ```
 
-We see 
-
+We see that tumour sizes are between 3 and 7 cm at baseline, and that they generally shrink during treatment.
 
 
 ### Linear model
 
-```{r}
-library(broom)
-```
+Before fitting an hierarchical model, we fit a standard ordinary least squares regression:
 
 ```{r, fig.width = 10}
 lm0 <- lm(TumourSize ~ 1 + Time, data = tumours)
 summary(lm0)
+```
+
+The average tumour is about 5cm at baseline and shrinks by about 1mm per month of follow-up.
+
+The R library `broom` _cleans up_ modelling in R by providing functions that summarise and expand the different types of models with standard functions and output.
+For instance, the `augment` function produces a table of the data underlying the model, with added predictions, residuals, and SEs:
+
+```{r}
+library(broom)
 augment(lm0)
+```
+
+We can overlay the regression sizes predicted by this model:
+```{r}
 p + geom_line(
   aes(y = .fitted), 
   data = augment(lm0) %>% distinct(Time, .fitted)
 )
 ```
+
+Note that we provided a new dataset for the new layer in the ggplot object by specifying `data = ` in the call to `geom_line`.
+Without this, `ggplot2` would have looked in the original `tumours` dataset for `.fitted` and complained when it did not find it.
+
+We see that the same prediction is made irrespective the baseline value.
+Surely we can improve upon this.
 
 
 ### Random intercepts models
@@ -158,74 +174,113 @@ $$ y_i = (\alpha + a_i) + \beta x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^
 
 $$a_i \sim N(0, \sigma_a^2)$$
 
+We can fit the mdoel using the `lme` function in the `nlme` package:
 ```{r}
 library(nlme)
-```
 
-
-```{r, fig.width = 9, fig.height = 10}
 lme0 <- lme(fixed = TumourSize ~ 1 + Time, 
             random = ~ 1 | TNO, 
             data = tumours)
 summary(lme0)
+```
+
+The `fixed` formula says "I want a population coefficient for the effects of the intercept and `Time`".
+The `random` formula says "Each TNO will have their own adjustment to the intercept".
+
+We can access the populaiton-level (aka "fixed") effects:
+```{r}
+fixef(lme0)
+```
+
+and the group-level (aka "random") effects:
+
+```{r}
 ranef(lme0)
+```
+
+As before, `augment` will give us a tbale of predictions based on the underlying data:
+```{r}
 augment(lme0)
+```
+
+and we can add those lines to the plot of the data:
+```{r, fig.width = 9, fig.height = 10}
 p + 
   geom_line(aes(y = .fitted, group = TNO), data = augment(lme0), col = 'red') +
   facet_wrap(~ TNO, ncol = 10)
 ```
 
+I have facet-wrapped the plots to make clear how the predictions from this model fit at a patient-level.
+
+Notice that, by design, the intercepts vary but the gradients do not: progression is assumed to be the same with no heterogeneity across the patients.
+Look at patients 6 and 7, for instance.
+The common gradient is a poor assumption here.
+
+Perhaps we can improve on this model too?
 
 
 ### Random gradients models
 
-The random gradiants model takes the random intercepts model and adds group-level gradients:
+The random gradients model takes the random intercepts model and adds group-level gradients:
 
-$$ y_i = (\alpha + a_i) + (\beta + b_i) x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^2)$$
+$$ y_i = (\alpha + a_i) + (\beta + b_i) \, x + \epsilon_i, \quad \epsilon \sim N(0, \sigma^2)$$
 
 $$a_i \sim N(0, \sigma_a^2), \quad b_i \sim N(0, \sigma_b^2)$$
 
-```{r, fig.width = 9, fig.height = 10}
+```{r}
 lme1 <- lme(fixed = TumourSize ~ 1 + Time, 
             random = ~ 1 + Time | TNO, 
             data = tumours)
 summary(lme1)
+```
+
+Regard now that there are intercept and gradients in the "random" effects matrix:
+```{r}
 ranef(lme1)
+```
+
+Once again, `augment` returns predictions:
+```{r}
 augment(lme1)
+```
+
+and we can view them in light of the observed data:
+```{r, fig.width = 9, fig.height = 10}
 p + 
   geom_line(aes(y = .fitted, group = TNO), data = augment(lme1), col = 'red') +
   facet_wrap(~ TNO)
 ```
 
+Notice how much improved the predictions are for patients 6 and 7.
+That should persuade you that the random gradients model is an improvement on the random intercepts model with this dataset.
+
+However, if you like hypothesis tests, you might want a $p$-value.
 `lme1` is nested within `lme0`, in that `lme0` is a special case of `lme1` with all $b_i$ set to zero.
+We can exploit this to run a likelihood ratio test via the `anova` command in R:
 
 ```{r}
 anova(lme0, lme1)
 ```
 
+The $p$-value of the test is microscopic, wholesomely rejecting the hypothesis that the variablility of the $b_i$ terms is zero.
 
 
-## Other stuff
-Set an exercise:
-```{r exercise1, exercise = TRUE}
+## Exercises
 
-```
+### Exercise 1 - Using `lme4`
 
-Set an exercise where you start the example:
-```{r exercise2, exercise = TRUE}
-mtcars %>% 
-  filter(mpg < 20)
+The `lme4` package will fit those models too via the `lmer` funciton.
+It uses a nicer syntax in that does not split the model formula into two parts but combines the "fixed" and "random" effects into one formula, like
 
-```
+> `y ~ 1 + Time + (1 | TNO)`
 
-Set an exercise where you provide a hint:
-```{r exercise3, exercise = TRUE}
+See if you can fit the random intercepts and random gradients models in `lme4`.
+Are the parameter estimates similar?
+How does `augment` behave on a model fit by `lmer`?
 
-```
-```{r exercise3-hint}
-mtcars %>% 
-  filter(mpg < 20) %>% 
-  group_by(cyl) %>% 
-  summarise(mean(hp))
-```
+### Exercise 2 - Adding a covariate for `Arm`
 
+Using either `nlme` or `lme4`, fit a random gradients model that includes a treatment arm covariate.
+Produce a grid of the fitted series with colour denoting `Arm`.
+Does progression vary across arms?
+By how much, on average?
