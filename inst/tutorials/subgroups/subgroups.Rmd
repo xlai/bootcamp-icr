@@ -1,0 +1,249 @@
+---
+title: "Subgroup Analyses"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+
+# Helper function
+format_num <- function(x, dp) {
+  format(round(x, dp), nsmall = dp)  
+}
+```
+
+
+## Welcome
+
+This tutorial demonstrates three different methods for performing a subgroup analyses.
+
+### Learning Objectives
+Upon completion of this session, you will:
+
+* Be able to perform a subgroup analisys using the  _subset_  method;
+* Be able to perform a subgroup analisys using the  _interaction_  method;
+* Be able to perform a subgroup analisys using the  _hierarchical_  method;
+* Understand the relative merits of each.
+
+
+## Introduction
+
+The analysis of primary interest in a clinical trial is usually that which includes all patients.
+The eligible population for the trial was defined precisely during trial work-up.
+The trial offers a chance to estimate the treatment effect in a sample from that population.
+
+Often, of secondary interest will be estimates of the treatment effect in specific subgroups of the population.
+These subgroup analyses can take on increased prominence if the main analysis fails to show the size of effect that the investigators had hoped. 
+Sometimes subgroup analyses reveal clinically-valid subsets of patients that have, for example, a common genetic trait that effects the efficacy of the treatment.
+
+Sometimes, however, subgroup analyses become indiscriminant fishing expeditions for where the treatment apparently works best.
+Without pre-specification, the subgroup that will receive the most focus is the one with the most extraordinary outcome.
+Random variation dictates that the treatment effect estimate will be artifically large in some groups and artifically small in others.
+This problem is exascerbated by small sample size.
+If a trial is designed with sample size $n$ to estimate the effect in the main population with certain precision, the sample size is by definition too small to estimate the same effect in a subgroup with the same precision.
+This encapsulates the first problem:
+
+1) _Subgroup analyses are imprecise._
+
+Selecting the results to emphasise based on the size of the observed effect practically guarantees that you will be emphasising overstated effects.
+This encapsulates the second problem:
+
+2) _The **reporting** of subgroup effects is biased._
+
+(and the estimation of subgroup effects may or may not be biased).
+
+It behoves biostatisticians to perform subgroup analyses that, to the greatest extent possible, maintain statistical efficiency and avoid overfitting.
+In this session, we encounter three methods.
+These are increasingly complex, but also increasingly able to avoid overfitting whilst maintaining or increasing statistical efficiency.
+
+
+## Trial scenario
+
+During this session, we will work with the `tumours` and `patients` datasets in the `bootcamp` package.
+To emulate a simple RCT with a continuous outcome measured once post-baseline, we make the following changes:
+
+* We treat tumour size at 9 months as the continuous outcome of interest, but codify this to be time 1;
+* We retain baseline tumour sizes as a covariate, codified as time 0. We expect this to be correlated with the outcome and thus adjusting for it should make the analysis more efficient;
+* We ease of interpretation in estimating treatment effects, we codify the arms as 0 and 1.
+
+The following code makes those changes:
+
+```{r, message=FALSE}
+library(bootcamp)
+library(dplyr)
+library(ggplot2)
+library(broom)
+library(lme4)
+library(tidyr)
+
+tumours <- tumours %>% 
+  mutate(
+    Arm = case_when(
+      Arm == 1 ~ 0,
+      Arm == 2 ~ 1),
+    Time = case_when(
+      Time == 0 ~ 0,
+      Time == 9 ~ 1)) %>% 
+  as_tibble()
+```
+
+
+Here are the `time=1` outcomes by arm:
+```{r}
+tumours %>% 
+  filter(Time == 1) %>% 
+  mutate(Arm = factor(Arm)) %>% 
+  ggplot(aes(x = Arm, y = TumourSize)) + 
+  geom_boxplot(aes(group = Arm)) + 
+  geom_point()
+```
+
+It is pretty clear that we are looking for the analysis to reveal a positive treatment effect for arm 0 compared to arm 1 because tumours are reliably smaller in arm 0.
+
+An analysis that adjusts for baseline tumour size is a simple _random intercepts_ hierarchical model:
+
+```{r, warning=FALSE}
+tumours %>% 
+  filter(Time %in% c(0, 1)) %>% 
+  lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time, data = .) %>% 
+  tidy()
+```
+
+We see that the average tumour measures about 5.1cm at baseline and that tumours shrink by 1.3cm on average in the `arm=0` group.
+The treatment effect is reflected by the `Time:Arm1` parameter, the interaction of time with treatment allocation.
+Tumours shrink by 0.9cm less in the `arm=1` group. 
+Thus, the unconditional expected tumour size at `time=1` for an `arm=0` patient is about 5.1 - 1.3 = 3.8 and for an `arm=1` patient is about 5.1 - 1.3 + 0.9 = 4.7.
+I say "unconditional" to distinguish these estimates from the conditional expected value for a specific patient with known baseline tumour size.
+The unconditional expected values are reflected in the figure above.
+
+This is the analysis of the full patient group.
+The treatment effect has associated $t$-statistic 6.8, a value thoroughly incompatible with a treatment effect of zero.
+In an homage to [Richard Peto](https://www.ncbi.nlm.nih.gov/pubmed/2899772/), we will reproduce this analysis approach in subgroups defined by starsign.
+
+
+
+
+## Subset Method
+The simplest and perhaps most intuitive method for estimating a subgroup effect is what we will call the _subset method_.
+
+Here, the analysis is performed just on the subset of data that pertains to the subgroup.
+For instance, to estimate the treatment effect in females, this method would throw away all data for males and perform the analysis only on the outcomes observed in females.
+In a randomised study with sufficient sample size, we would expect to have females allocated to each treatment arm.
+The presence of randomisation yields an estimate of the difference in outcomes that can be attributed to the treatment.
+This estimate will be unbiased.
+The problem is that it will also be inefficient.
+
+We have subgroups of the following sizes:
+```{r, rows.print = 20, warning=FALSE}
+patients %>% count(StarSign) %>% arrange(n)
+```
+
+Let us estimate the treatment effect in the largest subgroup using the subset method.
+This requires retaining only data for patients that have starsign Cancer:
+
+```{r, warning=FALSE}
+tumours %>% 
+  semi_join(patients %>% filter(StarSign == 'Cancer'), by = 'TNO') %>% 
+  filter(Time %in% c(0, 1)) %>% 
+  lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time, data = .) %>% 
+  tidy()
+```
+
+Remember that `semi_join` retains only rows in the LHS that have a matching key in the RHS, without adding any new data.
+It is a filtering operation.
+
+Here the treatment effect in the subgroup is estimated to be 0.48cm. with associated $t$-statistic 1.2.
+This would not be rejected as being significantly different to 0 in a convential hypothesis test.
+
+**Exercise** Perform a subgroup analysis in `Libra`. Now perform one in the smallest group, `Taurus`. What estimates do you get for the treatment effect? Feel free to use R or Stata. If you use Stata, you will have to write code to reproduce the changes we made to `tumours` and then fit the model.
+
+Star-signs were sampled randomly in these datasets, so star-sign will not genuinely be predictive of treatment effect.
+So what do we think of these estimates?
+We have nothing to compare them to yet.
+However, we should be piqued by the necessity to use only some of the data.
+A good rule of thumb for statisticians is: any method that gladly throws away data is probably no good.
+The _interaction_ method presented in the next section overcomes this flaw to increase precision.
+
+
+
+## Interaction Method
+What we will refer to as the _interaction method_ fits a model to the entire dataset and differentiates the estimates of the treatment effect in the general group and the subgroup using an extra interaction term.
+All of the data for patients outside the subgroup of interest are retained and used in the model to estimate common parameters, like the intercept and the time effect in our example.
+
+You can either: 
+
+1) estimate the treatment effect in the subgroup, and the additional effect in the general group as an adjustment; or
+2) estimate the treatment effect in the general group, and the additional effect in the subgroup as an adjustment.
+
+Intuitively, option 2 seems to make more sense.
+However, your choice of specification could be affected by availability of estimates of the parameter standard errors.
+Whilst it is simple to add the effects across groups, and methods 1 and 2 above will give the same estimates of the overall treatment effects in the subgroup and general group, standard errors cannot simply be added across parameters.
+An example will illustrate this better:
+
+Let us estimate the treatment effect in the `Libra` subgroup using version 1 of the interaction method.
+The model is fit to the entire dataset.
+Patients outside the subgroup of interest are adorned with an indicator variable to designate that they are in the _complement_ of the group of interest:
+```{r, warning=FALSE}
+tumours %>% 
+  left_join(patients, by = 'TNO') %>% 
+  mutate(Complement = StarSign != 'Libra') %>% 
+  replace_na(list(Complement = TRUE)) %>% 
+  filter(Time %in% c(0, 1)) %>% 
+  lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time + Complement:Arm:Time, 
+       data = .) %>% 
+  tidy() 
+```
+
+In this specification, the treatment effect in `Libra` patients is X and the treatment effect in the general non-`Libra` patients is X.
+
+Now let us estimate the same using version 2 of the interaction method:
+Again, the model is fit to the entire dataset.
+However, this time patients in the subgroup of interest are adorned with an indicator variable:
+
+```{r, warning=FALSE}
+tumours %>% 
+  left_join(patients, by = 'TNO') %>% 
+  mutate(Subgroup = StarSign == 'Libra') %>% 
+  replace_na(list(Subgroup = FALSE)) %>% 
+  filter(Time %in% c(0, 1)) %>% 
+  lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time + Subgroup:Arm:Time, data = .) %>% 
+  tidy()
+```
+
+In this specification, the treatment effect in `Libra` patients is X and the treatment effect in the general non-`Libra` patients is X.
+
+Notice that 
+
+## Hierarchical Method
+
+TODO
+
+
+
+## Quiz
+Throw in some quizes to check learning progress:
+
+```{r quiz, echo = FALSE}
+quiz(
+  
+  question("Which of the following are animals?",
+    answer("Cat", correct = TRUE),
+    answer("Petunia", correct = FALSE),
+    answer("Turmeric", correct = FALSE),
+    answer("Lizard", correct = TRUE)
+  ),
+  
+  question("Reviewers that demand p-values should be:",
+    answer("Rewarded with cuddles.", correct = FALSE),
+    answer("Fired into the sun.", correct = TRUE)
+  )
+)
+```
+
+
