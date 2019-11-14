@@ -171,7 +171,7 @@ full_subgroup_model %>%
   tidy()
 
 
-# Comparison
+# Compare Subset to Interaction ----
 star_signs <- c('Aquarius', 'Aries', 'Cancer', 'Capricorn', 'Gemini', 'Leo', 
                 'Libra', 'Pisces', 'Sagittarius', 'Scorpio', 'Taurus', 'Virgo')
 
@@ -219,7 +219,8 @@ bind_rows(
   labs(x = 'Star-sign-specific treatment effect')
 
 
-# Compare interaction models to hierarchical model
+
+# Compare Interaction to Hierarchical ----
 # Respecify models so that subgroup tmt effect is expressed as adjustment to 
 # population tmt effect, as hierarchical model does.
 interaction_models_alt <- map(
@@ -261,7 +262,6 @@ bind_rows(
 group_effects
 sqrt(attr(group_effects, "postVar")[1, , ])
 
-# 
 group_effects_df <- data.frame(
   Group = rownames(group_effects),
   estimate = group_effects[, 1],

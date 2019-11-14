@@ -63,7 +63,7 @@ In this session, we encounter three methods.
 These are increasingly complex, but also increasingly able to avoid overfitting whilst maintaining or increasing statistical efficiency.
 
 
-## Trial scenario
+## Trial Scenario
 
 During this session, we will work with the `tumours` and `patients` datasets in the `bootcamp` package.
 To emulate a simple RCT with a continuous outcome measured once post-baseline, we make the following changes:
@@ -175,6 +175,8 @@ The _interaction_ method presented in the next section overcomes this flaw to in
 ## Interaction Method
 What we will refer to as the _interaction method_ fits a model to the entire dataset and differentiates the estimates of the treatment effect in the general group and the subgroup using an extra interaction term.
 All of the data for patients outside the subgroup of interest are retained and used in the model to estimate common parameters, like the intercept and the time effect in our example.
+No data is thrown away.
+That is a good thing.
 
 You can either: 
 
@@ -200,11 +202,11 @@ tumours %>%
   tidy() 
 ```
 
-In this specification, the treatment effect in `Libra` patients is X and the treatment effect in the general non-`Libra` patients is X.
+In this specification, the treatment effect in `Libra` patients is 1.06 and the treatment effect in the general non-`Libra` patients is 1.06 - 0.15 = 0.91.
 
-Now let us estimate the same using version 2 of the interaction method:
+Now let us estimate the same using version 2 of the interaction method.
 Again, the model is fit to the entire dataset.
-However, this time patients in the subgroup of interest are adorned with an indicator variable:
+However, this time patients in the subgroup of interest are adorned with the indicator variable:
 
 ```{r, warning=FALSE}
 tumours %>% 
@@ -216,34 +218,239 @@ tumours %>%
   tidy()
 ```
 
-In this specification, the treatment effect in `Libra` patients is X and the treatment effect in the general non-`Libra` patients is X.
+In this specification, the treatment effect in `Libra` patients is 0.91 + 0.15 = 1.06 and the treatment effect in the general non-`Libra` patients is 0.91.
 
-Notice that 
+Notice that in specification 1, we learn that the estimated SE of the treatment effect in Librans is 3.01.
+It is non-trivial to recover the same statistic from specification 2.
+In contrast, specification 2 offers an estimate of the SE of the additional treatment effect in Librans, 0.43.
+Likewise, this is non-trivial to fetch from specification 1.
+
+Thus, the specification you use allows you to make different inferences.
+In particular, specification 1 will be useful for comparing subgroup-specific treatment effects to those estimated in the previous section by the subset method.
+And specification 2 will be useful for comparing subgroup-specific treatment effect _adjustments_, similar to those provided by the hierarchcial method in the next section.
+
+**Exercise** Perform a subgroup analysis in `Cancer` using specification 1 of the interaction method. Now perform one in the `Taurus` subgroup. How do these estimates compare to those from the subset method? And the SEs?
+
+
+## Compare Subset & Interaction Methods
+
+The code below fits the subset and interaction models to estimate treatment effects in all 12 star-signs, and then plots the estimates by subgroup by method with asymptotic 95% CIs.
+In this session, focus on the plot.
+The R code is a bit involved.
+Ignore it for now (unless you are interested in how `purrr` facilitates succinct functional programming in R).
+
+```{r, warning=FALSE, fig.width = 7, fig.height = 6}
+star_signs <- c('Aquarius', 'Aries', 'Cancer', 'Capricorn', 'Gemini', 'Leo', 
+                'Libra', 'Pisces', 'Sagittarius', 'Scorpio', 'Taurus', 'Virgo')
+
+library(purrr)
+subset_models <- map(
+  star_signs, 
+  function(x) {
+    tumours %>% 
+      semi_join(patients %>% filter(StarSign == x), by = 'TNO') %>% 
+      filter(Time %in% c(0, 1)) %>% 
+      lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time, data = .) %>% 
+      tidy() %>% 
+      mutate(Group = x, Method = 'Subset')
+  })
+
+interaction_models <- map(
+  star_signs,
+  function(x) {
+    tumours %>% 
+      left_join(patients, by = 'TNO') %>% 
+      mutate(Complement = StarSign != x) %>% 
+      replace_na(list(Complement = TRUE)) %>% 
+      filter(Time %in% c(0, 1)) %>% 
+      lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time + Complement:Arm:Time, 
+           data = .) %>% 
+      tidy() %>% 
+      mutate(Group = x, Method = 'Interaction')
+  }
+)
+
+bind_rows(
+  map_df(subset_models, bind_rows),
+  map_df(interaction_models, bind_rows)
+) %>% 
+  mutate(estimate_u = estimate + 1.96 * std.error,
+         estimate_l = estimate - 1.96 * std.error) %>% 
+  filter(term == 'Time:Arm') %>% 
+  ggplot(aes(x = estimate, y = Method, col = Method)) + 
+  geom_point() + 
+  geom_errorbarh(aes(xmax = estimate_u, xmin = estimate_l), height = 0.1) + 
+  geom_vline(xintercept = 1, col = 'orange', linetype = 'dashed') + 
+  facet_wrap(~ Group) + 
+  labs(x = 'Star-sign-specific treatment effect') + 
+  theme(legend.position = 'bottom')
+```
+
+We see that:
+
+* the CIs are generally narrower under the interaction method. This should be no surprise because the model uses much more data;
+* treatment effect estimates are less extreme under the interaction method, i.e. they are generally closer to the (true) global treatment effect of 1.0 shown by the dashed orange lines.
+* the interaction model succeeded in the very small `Taurus` group, but failed under the subset method.
+
+So, we see in this comparison that the interaction method improves on the subset method in terms of both precision (CIs are narrower) and accuracy (the method is less wrong).
 
 ## Hierarchical Method
 
-TODO
+Each of the previous methods involves fitting a model for each subgroup.
+The final approach is a hierarchical model.
+It estimates in one single analysis all subgroup-specific adjustments to the population treatment effects, whilst also adjusting for baseline measurement, treatment arm and time effect.
+General principles of Bayesian statistics are that analysing all of your effects in one model is a good thing, and in order to simultaneously estimate many effects without running out of information, hierarchical models are very useful.
 
+To describe this as an hierarchical model is true but seemingly disingenuous: the subset and interaction methods were illustrated by fitting random intercepts models and these are also a type of hierarchical model.
+The distinction here is that the subgroup effects have become another level of the hierarchy.
 
+Algebgraically, the model is:
 
-## Quiz
-Throw in some quizes to check learning progress:
+$$ y_i = \alpha + a_i + \beta \, t + \gamma \, t \, Arm + b_i t \, Arm + \epsilon$$
 
-```{r quiz, echo = FALSE}
-quiz(
-  
-  question("Which of the following are animals?",
-    answer("Cat", correct = TRUE),
-    answer("Petunia", correct = FALSE),
-    answer("Turmeric", correct = FALSE),
-    answer("Lizard", correct = TRUE)
-  ),
-  
-  question("Reviewers that demand p-values should be:",
-    answer("Rewarded with cuddles.", correct = FALSE),
-    answer("Fired into the sun.", correct = TRUE)
-  )
-)
+and 
+
+$$ \epsilon \sim N(0, \sigma^2), \quad a_i \sim N(0, \sigma_a^2), \quad b_i \sim N(0, \sigma_b^2) $$
+
+where the $a_i$ is the baseline measurement and $b_i$ is the star-sign for patient $i$.
+
+The model is disarmingly simple to fit:
+```{r, warning=FALSE}
+tumours %>% 
+  left_join(patients, by = 'TNO') %>% 
+  filter(Time %in% c(0, 1)) %>% 
+  lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time + (0 + Arm:Time | StarSign), 
+       data = .) -> full_subgroup_model
+
+full_subgroup_model %>% tidy()
 ```
 
+We see once again that:
+
+* the average tumour size at baseline is about 5cm, $\alpha$;
+* tumours shrunk by about 1.3cm over time independent of treatment, $\beta$;
+* tumours in one arm were on average 0.96cm bigger at final analysis, $\gamma$.
+
+Each of these inferences either matches or is very close to the estimates from the simple model illustrated in the _Trial Scenario_ section.
+
+We then have estimates of $\sigma_a$, $\sigma_b$, and $\sigma$.
+Immediately we observe that $\sigma_a$ is about twice as large as $\sigma_b$, showing that adjustments warranted from knowing a patient's baseline tumour size are about twice as variable as adjustments warranted from knowing a patient's star-sign.
+From this, we might rightly question whether knowing star-sign is any use at all.
+
+The treatment effect adjustments by star-sign are:
+
+```{r}
+ranef(full_subgroup_model)$StarSign
+```
+
+As in the previous section, we see that `Aries` has the most positive adjustment to the general population treatment effect, and `Sagittarius` the most negative.
+The size and precision of the adjustment estimates is the focus of the next section.
+
+## Compare Interaction & Hierarchical Methods
+
+Once again, code to compare the inferences is provided but not necessarily explained.
+The interaction models are re-specified to use specification 1 described in previous sections.
+This is to provide statistics and SEs that compare to the output created by the hierarchical model.
+
+```{r, warning=FALSE, fig.width = 7, fig.height = 6}
+interaction_models_alt <- map(
+  star_signs,
+  function(x) {
+    tumours %>%
+      left_join(patients, by = 'TNO') %>%
+      mutate(Subgroup = StarSign == x) %>%
+      replace_na(list(Subgroup = FALSE)) %>%
+      filter(Time %in% c(0, 1)) %>%
+      lmer(TumourSize ~ 1 + (1 | TNO) + Time + Arm:Time + Subgroup:Arm:Time,
+           data = .) %>%
+      tidy() %>%
+      mutate(Group = x, Method = 'Interaction')
+  }
+)
+
+group_effects <- ranef(full_subgroup_model)$StarSign
+group_effects_df <- data.frame(
+  Group = rownames(group_effects),
+  estimate = group_effects[, 1],
+  Method = 'Hierarchical'
+)
+
+bind_rows(
+  map_df(interaction_models_alt, bind_rows) %>% 
+    filter(term == 'Time:Arm:SubgroupTRUE') %>% 
+    select(Group, estimate, Method),
+  group_effects_df
+) %>% 
+  ggplot(aes(x = estimate, y = Method, col = Method)) + 
+  geom_point() + 
+  geom_vline(xintercept = 0, col = 'orange', linetype = 'dashed') + 
+  facet_wrap(~ Group) + 
+  labs(x = 'Star-sign-specific treatment effect')
+```
+
+This plot shows adjustments to the population-level treatment effect only.
+We see that the estimate from the hierarchical model is always closer to the population-level effect, i.e. the adjustment is closer to zero.
+This is called _shrinkage_, and it is a general desirable property of hierarchical models that reduces the tendency for models to overfit.
+It is particularly useful in subgroup analyses.
+
+The model $b_i \sim N(0, \sigma_b^2)$ shrinks the estimates back to zero.
+The extent of shrinkage is determined by the data.
+That is, $\sigma_b^2$ is estimated from the variability of the star-sign-specific effects that manifest.
+The suite of interaction models fit in the previous section is akin to an hierarchical model where we set $\sigma_b = \infty$.
+Here, no group provides any information about the treatment effect in any other group.
+This is a far-fetched assumption.
+
+A model that expressly forbids subgroup variability is akin to an hierarchical model where we set $\sigma_b = 0$.
+Here, each subgroup is necessarily identical.
+This too is a far-fetched assumption.
+
+The hierarchical model is a pragmatic compromise between this two implausible extremes where $\sigma_b$ is estimated from the data.
+
+We will naturally wonder about the precision of the subgroup effects.
+It is possible (but suspiciously inconvenient) to access SEs of the subgroup effects, as demonstrated below.
+However, the following [Cross Validated page] (https://stats.stackexchange.com/questions/48254/standard-error-of-random-effects-in-r-lme4-vs-stata-xtmixed) suggests that these SE estimates may not reflect all the pertinent uncertainty and that would prohibit valid comparison between the interaction and hierarchical approaches.
+
+Nevertheless, with that proviso in mind:
+
+```{r, warning=FALSE, fig.width = 7, fig.height = 6}
+group_effects_df <- data.frame(
+  Group = rownames(group_effects),
+  estimate = group_effects[, 1],
+  std.error = sqrt(attr(group_effects, "postVar")[1, , ]),
+  Method = 'Hierarchical'
+)
+
+bind_rows(
+  map_df(interaction_models_alt, bind_rows) %>% 
+    filter(term == 'Time:Arm:SubgroupTRUE') %>% 
+    select(Group, estimate, std.error, Method),
+  group_effects_df
+) %>% 
+  mutate(estimate_u = estimate + 1.96 * std.error,
+         estimate_l = estimate - 1.96 * std.error) %>%
+  ggplot(aes(x = estimate, y = Method, col = Method)) + 
+  geom_point() + 
+  geom_errorbarh(aes(xmax = estimate_u, xmin = estimate_l), height = 0.1) +
+  geom_vline(xintercept = 0, col = 'orange', linetype = 'dashed') + 
+  facet_wrap(~ Group) + 
+  labs(x = 'Star-sign-specific treatment effect adjustment')
+```
+
+We see that the CIs are narrower under the hierarchical model.
+Also, the method is less likely to be fooled.
+The `tumours` dataset was simulated with no subgroup effects, thus the true value of all of these parameters is zero, as presented by the orange dashed lines.
+The 95% CIS from the hieraerchical model contain zero in 11 of the 12 groups; the interaction model CIs contain zero in 10 or 12 groups.
+Both models get `Aries` wrong, eviently quite an extreme chance event.
+The CI from the hieraechical model for the `Sagittarius` subgroup just manages to include zero thanks to the shrinkage provided by the model.
+
+
+## Conclusion
+In conclusion, we looked at three increasingly complex methods for performing subgroup analyses.
+
+The subgroup method is wasteful and overfits to chance data.  Do not use it.
+
+The interaction method is more precise (i.e. narrower CIs) and more accurate (i.e. less wrong) because it uses all data.
+
+The hierarchcial method is more accurate again because it uses shrinkage.
+It may or may not be more precise - that question remains open.
 
