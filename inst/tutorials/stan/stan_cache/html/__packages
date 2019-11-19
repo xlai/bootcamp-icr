@@ -1,0 +1,10 @@
+base
+shiny
+learnr
+dplyr
+StanHeaders
+ggplot2
+rstan
+Rcpp
+brms
+rstanarm

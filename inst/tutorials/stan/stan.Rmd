@@ -1,0 +1,598 @@
+---
+title: "Stan"
+author: "Kristian Brock"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+
+# Any setup R code can go here
+library(dplyr)
+```
+
+
+## Welcome
+
+This tutorial introduces to the Bayesian MCMC software, [Stan](https://mc-stan.org/).
+
+### Learning Objectives
+Upon completion of this session, you will:
+
+* Be able to write a simple model in Stan;
+* Be able to fit the model to data;
+* Be able to run models in `brms` and `rstanarm`
+* Be able to work with posterior draws
+
+
+## Introduction
+
+Debating whether R or Python or Stata or SAS is best is so passé.
+Stan has made it so that you can fit any model you can imagine.
+In doing so, it achieved something none of the other languages could.
+
+Stan is an MCMC implementation with an associated model specification language, like BUGS and JAGS.
+Unlike BUGS & JAGS, which use Gibbs samplers, Stan implements a Hamiltonian Monte Carlo algorithm.
+This yields more efficient posterior sampling for high dimension problems, i.e. precisely the sort of problems that benefit most from a Bayesian approach.
+
+The beauty of Stan is that it separates the model specification problem (the bit that statisticians really care about) from the model fitting problem (the nuisance arduous task that feels more like it belongs on the desk of a mathematician or computer scientist).
+If you are working on a problem and none of the off-the-shelf solutions work, chances are you can create your own solution using Stan.
+
+
+## The Stan Language
+Stan models are written in plain text files. 
+A model is compiled to a C++ program that ultimately produces posterior samples. 
+The analyst uses these to understand the data, produce predictions, make inferences and decisions. 
+This section illustrates the essential elements of the Stan syntax.
+These are demonstrated using [the 8 schools problem](https://statmodeling.stat.columbia.edu/2014/01/21/everything-need-know-bayesian-statistics-learned-eight-schools/), a study of the effect of coaching for a standardised test in 8 schools.
+
+### Variable declarations
+All variables must be declared with a type. 
+In Bayesian modelling, variables constitutes both data and parameters. 
+Stan is a strongly-typed language, so if you declare a variable to be an integer, trying to allocate it a decimal value will cause an error. 
+This matches the behaviour of C and C++ but contrasts languages like R and Python where variables have no fixed type and can take any value.
+
+Furthermore, lower and upper bounds can be specified when a variable is declared. For example, a probability is a real-valued number bounded between 0 and 1.  
+When such bounds exist, it is good practice to declare them because this will make posterior sampling more efficient.
+
+The following code declares a variable named `num_patients` that takes integer values, and another named `prob_tox` that takes real numerical (i.e. decimal) values:
+
+```{stan output.var="model1", eval = FALSE}
+int num_patients;
+real prob_tox;
+```
+
+Notice the semicolons at the end of the lines? 
+These are not optional. 
+The Stan compiler will object if they are absent.
+
+The following code adds sensible lower and upper bounds to our variables defined above. 
+We would use this version instead. 
+The bounds you use in your examples will naturally be determined by your modelling scenario; these are for illustration.
+
+```{stan output.var="model1", eval = FALSE}
+int<lower = 1> num_patients;
+real<lower = 0, upper = 1> prob_tox;
+```
+
+Stan also provides array versions of these types. To declare an array of four integers, each bounded below by 0, we would use code like this:
+
+```{stan output.var="model1", eval = FALSE}
+int<lower = 0> cohort_size[4];
+```
+
+Arrays are zero-based, so the first element is cohort_size[0] and the last is cohort_size[3].
+This is different to R.
+
+The length of an array can itself be an integer variable:
+```{stan output.var="model1", eval = FALSE}
+int<lower = 1> num_cohorts;
+int<lower = 0> cohort_size[num_cohorts];
+```
+
+### Code blocks
+At the time of writing*, the syntax for a Stan model is split into several blocks. 
+Code blocks are wrapped in curly braces, like this:
+
+```{stan output.var="model1", eval = FALSE}
+blockname {
+  // blah blah blah
+}
+```
+
+This is an opportune place to highlight that comments in Stan use a double slash.
+
+There are several possible blocks defined in Stan, each with a distinct role. Depending on the complexity of the model, some blocks may be needed and some may not. The following simple Stan model uses code in the following four blocks:
+
+* `data`
+* `parameters`
+* `transformed parameters`
+* `model` 
+
+We explore these in turn now.
+
+#### The `data` block
+This block declares data variables, i.e. those variables that you will observe in your experiment or research. You define the data-types and possibly also bounds of the data here. 
+
+In the 8 schools example, the data block is:
+
+```{stan output.var="model1", eval = FALSE}
+data {
+  int<lower=0> J; // number of schools
+  real y[J]; // estimated treatment effects
+  real<lower=0> sigma[J]; // s.e. of effect estimates
+}
+```
+
+`J` is the number of schools, with minimum value 0. 
+`y` is an array of treatment effects in the `J` schools. 
+Theoretically, these may take any real number value. 
+`sigma` is an array of the standard errors of the treatment effects, also of length `J`. 
+Since standard errors cannot be negative, the values for `sigma` are bounded below at 0. 
+
+Note that you do not provide the actual data values here. 
+No variable is assigned a value in the block above, they are simply declared. 
+Values for your data variables are provided when you fit the model.
+
+#### The `parameters` block
+A parameter in Stan is a variable that features in your model whose value is unknown. 
+Parameters are estimated by generating samples from the posterior distribution using the Hamiltonian Monte Carlo algorithm. 
+The returned model fit contains samples for each parameter (and transformed parameter - more on that later).
+
+The `parameters` block in the 8 schools example is:
+
+```{stan output.var="model1", eval = FALSE}
+parameters {
+  real mu;
+  real<lower=0> tau;
+  real eta[J];
+}
+```
+
+What each of these parameters means in the context of the model is currently a mystery. 
+All will be revealed in the `model` block.
+For now, note that parameters have a type, and perhaps also bounds.
+
+Note also the similarity between the `data` and `parameters` blocks. 
+Each simply declares variables. 
+The difference is that you will provide values for the variables in data and Stan will produce samples for the  variables in parameters.
+
+#### The `transformed parameters` block
+We meet more parameters in this block. 
+As the name suggests, these parameters depend on other parameters. 
+Posterior samples will be returned for these variables as well. 
+This block can contain variable declarations and assignment statements. This is well illustrated in the 8 schools example:
+
+```{stan output.var="model1", eval = FALSE}
+transformed parameters {
+  real theta[J];
+  for (j in 1:J)
+    theta[j] = mu + tau * eta[j];
+}
+```
+
+First, a real-valued array is defined to hold values of `theta` for the `J` schools. 
+Inside a for-loop, the values of `theta` are then calculated to be a linear combination of `mu`, `tau` and `eta`, three variables defined in the parameters block. 
+Note that Stan uses the `=` symbol to assign values in contrast to the `<-` symbol used in R and BUGS. 
+Also note the semicolon at the end of the line that calculates `theta`; and that it was not necessary to declare the counter variable, `j`.
+
+#### The `model` block
+This is the main event. 
+The other blocks have been introducing the characters that now act out the plot in this drama. 
+The `model` block contains statements that specify the prior distributions of the parameters and the likelihood of the data. 
+
+In 8 schools, the `model` block is:
+
+```{stan output.var="model1", eval = FALSE}
+model {
+  target += normal_lpdf(eta | 0, 1);
+  target += normal_lpdf(y | theta, sigma);
+}
+```
+
+The elements of `eta` have a unit normal prior distribution. 
+That is, the prior mean and standard deviation are 0 and 1. 
+The function `normal_lpdf` returns the log probability density (LPD) of a variable with given mean and standard deviation, specified after the vertical bar. 
+The outcome variable `y` is assumed normal conditional on the expected value theta and standard deviation sigma. 
+The line of code involving `y` is the model likelihood. 
+Notice that the `y` values have known variance - `sigma` is an array of data values passed by the user.
+
+No priors are identified for `mu` and `tau` so these variables are implicitly allocated improper uniform priors over all real values. 
+The aggregate model log probability density (LPD) is added to the variable with the reserved keyword `target.` 
+The `+=` operator, ported from languages like C++ and Java, says “increment the variable on the left by the amount on the right”. 
+If more priors were specified, they too would involve calls to increment the `target`. 
+Stan uses `target` to work out how to sample from the joint posterior distribution of the parameters.
+
+The `model` code block could have been written:
+
+```{stan output.var="model1", eval = FALSE}
+model {
+  eta ~ normal(0, 1);
+  y ~ normal(theta, sigma);
+}
+```
+
+Users may find this syntax more intuitive. 
+Behind the scenes, the two versions are equivalent. 
+It is important to know that in both cases, log probability density is being added to target. 
+
+This explanation of the `model` block suffices for now. 
+The section below shows the 8 schools example in its entirety. 
+Next, we will fit the model to some data.
+
+8 schools in its entirety:
+
+```{stan output.var="model1", eval = FALSE}
+data {
+  int<lower=0> J; // number of schools
+  real y[J]; // estimated treatment effects
+  real<lower=0> sigma[J]; // s.e. of effect estimates
+}
+parameters {
+  real mu;
+  real<lower=0> tau;
+  real eta[J];
+}
+transformed parameters {
+  real theta[J];
+  for (j in 1:J)
+    theta[j] = mu + tau * eta[j];
+}
+model {
+  target += normal_lpdf(eta | 0, 1);
+  target += normal_lpdf(y | theta, sigma);
+}
+```
+
+### Fitting the model
+When the model is fit to data, stan samples from the joint posterior for all of the parameters (including transformed parameters).
+
+The original 8 schools analysis looked at the effects of teaching, `y`, with associated standard errors, `sigma`:
+
+```{r, echo=FALSE}
+data.frame(
+  y = c(28,  8, -3,  7, -1,  1, 18, 12),
+  sigma = c(15, 10, 16, 11,  9, 11, 10, 18)
+)
+```
+
+To fit the model, we must provide compatible values for each of the variables in the `data` block.
+Stan expects the data to be provided as a `list`:
+```{r}
+schools_dat <- list(
+  J = 8,
+  y = c(28,  8, -3,  7, -1,  1, 18, 12),
+  sigma = c(15, 10, 16, 11,  9, 11, 10, 18)
+)
+```
+
+Put the full Stan code for the model into a file called `8schools.stan` somewhere on your system.
+You fit the model by running:
+
+```{r, eval=TRUE, cache=TRUE, message=FALSE}
+library(rstan)
+
+# The following line ensures the model is compiled once:
+rstan_options(auto_write = TRUE)
+
+# Fit the model
+fit <- stan(file = '~/Desktop/bootcamp/8schools.stan', data = schools_dat)
+```
+
+The last line both compiles and fits the model.
+If needed, you can break the steps up, like:
+
+```{r, eval=FALSE}
+model <- stan_model(file = '~/Desktop/bootcamp/8schools.stan')
+fit <- sampling(model, data = schools_dat)
+```
+
+This method is clear, for example, if you want to fit the model to lots of different datasets.
+
+We can view a summary of the posterior samples with:
+
+```{r}
+print(fit)
+```
+
+
+
+## Univariate regression model
+
+This example of a simple univariate regression model comes [care of Ben Goodrich](https://rstudio.cloud/project/56157):
+
+```{stan output.var="model1", eval = FALSE}
+data {
+  int<lower = 1> N;
+  vector[N] x;
+  vector[N] y;
+}
+parameters {
+  real a;                // intercept
+  real b;                // slope
+  real<lower = 0> sigma; // noise standard deviation
+}
+model {
+  y ~ normal(a + b * x, sigma); // likelihood
+}
+```
+
+Notice how little information is needed from the user.
+The `data` and `parameters` blocks are essentially admin.
+The `model` block contains one simple command telling us that the response variable in the regression is normally distributed, conditional on `a`, `b`, `x`, with variability `sigma`.
+
+Now imagine the technicalities that were omitted.
+We have not had to concern ourselves with how the data should be used to derive parameter estimates.
+Stan just works this out.
+All we had to worry about was specifying the relationship between the data and the parameters.
+
+
+### Exercise
+Fit the above Stan univariate regression model to some data.
+Save the Stan model code somewhere convenient called `Univariate.stan`.
+Call the fit object `fit`.
+
+* You could simulate data:
+  * Pick values for `N`, `a`, `b` and `sigma` (for the model to fit in reasonable time, choose `N` no greater than 1000...and if you want to recover your parameters, do not make `sigma` too big);
+  * Simulate normal `x` using `rnorm(N)`
+  * Simulate `epsilon` using `rnorm(N, sd = sigma)`
+  * Calculate `y` using $y = a + b x + \epsilon$
+  * Try to recover `a`, `b` and `sigma` by fitting the regression with `data = list(N = N, x = x, y = y)`.
+* If you prefer, you can either define `N`, `x` and `y` by hand...
+* Or load data from some source.
+
+
+## `rstan` Example
+
+Create the data:
+```{r}
+N <- 1000
+a <- 6
+b <- 0.25
+sigma <- 2
+
+set.seed(123)
+x <- rnorm(N)
+epsilon <- rnorm(N, sd = sigma)
+y <- a + b * x + epsilon
+```
+
+Run a regular OLS regression:
+```{r}
+summary(lm(y ~ x))
+```
+
+Run the `rstan` model:
+```{r, cache=TRUE}
+library(rstan)
+rstan_options(auto_write = TRUE)
+
+fit <- stan('stan_files/Univariate.stan', data = list(N = N, x = x, y = y))
+fit
+```
+
+
+## `brms`
+There are two general model fitting packages in R that write Stan code for you.
+You specify the model using R's succinct model syntax that we have met before:
+
+`y ~ 1 + x + (1 | id)`
+
+and the packages take care of the Stan code for you.
+We will meet those packages int he next few sections.
+
+`brms` writes models on demand.
+As such it supports a bewildering array of distributions, link functions, sub-model specifications, and group-level structures.
+This vast flexibility means that if you want to fit a particular type of model quickly, `brms` is probably your best bet.
+
+To illustrate this point, let me recount a challenging modelling situation I encountered recently.
+
+The data consisted of patient-reported frequencies of symptoms, with maximum value 20:
+
+* The responses took integer values;
+* At baseline, all patients reported some symptoms (i.e. non-zero responses);
+* Post-baseline, many patients reported symptom frequencies of 0, reflecting resolution of all symptoms, including many patients on placebo;
+* But with time, the symptoms tended to come back.
+
+Thus, faithfully modelling this dataset required a model that:
+
+1) Handles integer responses;
+2) Allows repeated measures;
+3) Allows zero-inflated responses;
+4) Allows the zero-inflatedness to vary through time, and possibly by arm.
+
+Satisfying point 1 is trivial. Point 2 is also straight forward to handle using, for example, `lme4`.
+Point 3 is where the model requirements get a bit specialist. 
+And point 4 is where I was flumoxed for any suitable approach.
+But then I came across a zero-inflated analysis example in [one of the `brms` vignettes](https://cran.r-project.org/web/packages/brms/vignettes/brms_distreg.html).
+Eventually, I was able to fit the model with a call like:
+
+```{r, eval = FALSE}
+fit1 <- brm(
+  bf(Response | trials(20) ~ 1 + Time + Time:Arm + (1 + Time | Id), 
+     zi ~ Time), 
+  data = data, family = zero_inflated_binomial("logit"), prior = prior,  
+  cores = 4, seed = 123
+)
+```
+
+### Exercise
+Fit a simple linear regression using `brms` to the `x` and `y` values that you created before.
+Fit the model with a call to `brm`.
+To distinguish it from your rstan fit, call the fitted object `fit1`.
+
+Notes:
+
+* The first argument would be `y ~ x`, just like before;
+* This function will need the data provided in a data-frame, e.g. `data = data.frame(x, y)`;
+* When omitted, the `family` parameter would default to `gaussian()`. That will suffice here.
+* For this example, you need not specify the `prior` parameter because `brms` will choose minimally informative priors for you.
+Feel free to investigate different priors if you wish.
+In a proper analysis, you would generally specify and justify priors.
+* You can specify or omit `cores` and `seed`. 
+
+How do your parameter estimates for `a`, `b`, and `sigma` compare to the `rstan` version?
+
+## `brms` Example
+
+```{r, cache=TRUE, message=FALSE}
+library(brms)
+fit1 <- brm(y ~ x, data = data.frame(x, y))
+fit1
+```
+
+
+
+## `rstanarm`
+In contrast, `rstanarm` has pre-written Stan models for a wide array of modelling situations, but not as wide as `brms`.
+Being pre-compiled, you do not need to wait for the Stan file to be produced.
+The compilation time is the delay between running a command and seeing the sampling log messages from `Stan`.
+Compilation takes about a minute, so doing away with it is generally desirable.
+Model fitting functions in `rstanarm` tend to use names that match the model fitting functions in base R and `lme4` with the prefix `stan_`.
+That is, if you would normally be calling base R's `glm`, the `rstanarm` equivalent is `stan_glm`.
+The disdvantage of pre-compilaiton is that `rstanarm` supports a narrower set of models.
+
+In terms of development speed:
+
+`rstanarm` > `brms` > `rstan`
+
+but in terms of flexibility:
+
+`rstanarm` < `brms` < `rstan`
+
+so the approach you choose will depend on your goals.
+
+To fit the above example in `rstanarm`, you can run:
+
+```{r, cache=TRUE, message=FALSE}
+library(rstanarm)
+fit2 <- stan_lm(y ~ x, data = data.frame(x, y), 
+                prior = R2(0.5, what = 'median'))
+fit2
+```
+
+Run that now on your data.
+Notice there is no lag whilst the model is compiled?
+Sampling commences immediately.
+Notice also that `rstanarm` demands you specify priors.
+Here, with very little rumination, I placed a prior on the $R^2$ parameter, a variable which takes values on (0, 1).
+Again, in a real analysis, more thought on the priors is warranted.
+
+
+## Posterior Draws
+
+The goal of MCMC fitting is getting samples from the joint posterior distribution and using these samples for inference.
+You can get at the posterior draws by simply running `as.data.frame`:
+
+```{r}
+library(dplyr)
+
+fit %>% as.data.frame()
+```
+
+### Exercise
+Calculate the posterior probability from your model that your `sigma` parameter is greater than some critical value.
+
+### `tidybayes` 
+The `tidybayes` package lets you extract posterior samples (or draws) from the various MCMC methods in a standardised way.
+Two work-horse functions here are `spread_draws` to get adjacent columns of samples:
+
+```{r}
+library(tidybayes)
+
+spread_draws(fit, a, b) %>% 
+  head
+```
+
+
+and `gather_draws` to get stacked samples with an adjacent textual label designating the variable:
+
+```{r}
+library(tidybayes)
+
+gather_draws(fit, a, b) %>% 
+  head
+
+gather_draws(fit, a, b) %>% 
+  tail
+```
+
+These functions will work with fits from `rstan`, `brms` and `rstanarm`.
+Frustratingly, the three packages label the model parameters in different ways so sometimes a call to `get_variables`:
+
+```{r, message=FALSE}
+get_variables(fit2)
+```
+
+is necessary in order to know what to specify in the extraciton function:
+
+```{r}
+gather_draws(fit2, `(Intercept)`, x) %>% head
+```
+
+In this tall format provided by `gather_draws` for instance, posterior density plots are simple using `ggplot2`:
+
+```{r}
+library(ggplot2)
+
+gather_draws(fit2, `(Intercept)`, x) %>% 
+  ggplot(aes(x = .value, fill = .variable)) + 
+  geom_density() + 
+  labs('Posterior densities of parameter coefficients', 
+       fill = 'Parameter', x = '')
+```
+
+Two other key functions in `tidybayes` are `add_fitted_draws` and `add_predicted_draws`.
+These use the posterior samples and the model matrix to calculate fitted and predicted values:
+
+```{r}
+data.frame(x, y) %>% 
+  add_fitted_draws(fit1) %>% 
+  head
+```
+
+These samples can be grouped and summarised in various ways to condition on some variables and marginalise over others.
+For instance, to summarise the fitted $y$ value at each $x$, we can run:
+```{r}
+data.frame(x, y) %>% 
+  add_fitted_draws(fit1) %>% 
+  group_by(x) %>% 
+  mean_qi(.value) %>% 
+  head
+```
+
+The `mean_qi` function provided by `tidybayes` summarises a grouped data-frame with a mean and quantile interval (95% by default, naturally).
+
+To illustrate the usage of `add_fitted_draws` and `add_predicted_draws`, here are the fitted values with uncertainty bars for given $x$ values:
+```{r}
+data.frame(x, y) %>% 
+  add_fitted_draws(fit1) %>% 
+  group_by(x) %>% 
+  mean_qi(.value) %>% 
+  ggplot(aes(x = x, y = .value)) + 
+  geom_point(col = 'orange') + 
+  geom_errorbar(aes(ymin = .lower, ymax = .upper), alpha = 0.1) + 
+  ylim(0, 12) + 
+  labs(y = 'y')
+```
+
+and here are summaries from the posterior predictive distributions, again at different values of $x$:
+```{r}
+data.frame(x, y) %>% 
+  add_predicted_draws(fit1) %>% 
+  group_by(x) %>% 
+  mean_qi(.prediction) %>% 
+  ggplot(aes(x = x, y = .prediction)) + 
+  geom_point(col = 'orange') + 
+  geom_errorbar(aes(ymin = .lower, ymax = .upper), alpha = 0.1) + 
+  ylim(0, 12) + 
+  labs(y = 'y')
+
+```
+
+These can be loosely interpreted as being analogous to the confidence interval on the expected value at a given $x$ and the confidence interval on a single new $y$-value for given $x$.
+
+These functions and the summary opportunities they provide are very useful when you have models with a lot going on and you want to visualise certain effects.
+
