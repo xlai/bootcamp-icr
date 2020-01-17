@@ -8,21 +8,32 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <img src="inst/images/logo.PNG" width="400">
 
-The `bootcamp` R package contains materials written to train new biostatisticians at Cancer Research UK Clinical Trials Unit at the University of Birmingham. 
+The `bootcamp` R package contains materials written to teach technical skills to new biostatisticians at Cancer Research UK Clinical Trials Unit (CRCTU) at the University of Birmingham. 
 Sessions are presented as [learnr](https://rstudio.github.io/learnr/) tutorials.
+There is an emphasis on methods that use modern statistical approaches and promote repeatable research.
 
 Content includes:
 
-* Folder structure for trial analysis directories;
+* Folder structure for clinical trial analysis directories;
 * Using [R](https://www.r-project.org/) & [RStudio](https://www.rstudio.com/)
 * Using [git](https://git-scm.com/)
 * Using [ggplot2](https://r4ds.had.co.nz/data-visualisation.html)
 * Using [markdown](https://en.wikipedia.org/wiki/Markdown) and [pandoc](https://pandoc.org/)
 * Using [Rmarkdown](https://rmarkdown.rstudio.com/)
+* Using [tidyverse](https://www.tidyverse.org/) packages
 * Core skills in [Stata](https://www.stata.com/)
-* and loads more
+* Working with database snapshots
+* Analysing repeated measures data with hierarchical models
+* Using regression models for sub-group analyses (and how not to do it)
+* Using [Stan](https://mc-stan.org/)
+* Using the CRM model for dose-finding
+
+The material was first taught Sep-Dec 2019.
+The course will be given again in 2020.
+It will probably also grow to take in further topics.
 
 If you use any of these materials or want to do something similar at your institution, please drop a line to kristian.brock@gmail.com.
+
 
 ## Installation
 You can install `bootcamp` straight from GitHub with `devtools`.
@@ -67,8 +78,12 @@ Tutorials currently available (i.e. valid substitutions for `intro` above) are:
 * `markdown`
 * `rmarkdown`
 * `snapshots`
+* `tidyverse`
+* `models`
+* `repeatedmeasures`
+* `subgroups`
+* `stan`
 
-More are coming.
 
 ## Running tutorials online
 
