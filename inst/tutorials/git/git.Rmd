@@ -313,6 +313,15 @@ You can also use `git commit` which opens a default text editor allowing the cre
 
 Once you have completed your commit, you can use `git log` to view the commit history.
 
+A useful tip for visually inspecting the branching structure is the following command
+
+```
+git log --oneline --graph --all
+```
+
+It displays the entire commit history of all branches in a compact, one-line format, 
+and illustrates the branching and merging structure with a rudimentary coloured art graph.
+
 ### Understanding changes
 
 At any point of your workflow (no matter whether you are editing, staging or about to commit),
