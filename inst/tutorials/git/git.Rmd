@@ -436,6 +436,13 @@ git push [remote-name] [branch-name]
 ```
 This sends your local changes to the specified remote repository and branch.
 
+**Note** If it is your first time pushing the branch to a remote repository,
+remember to use `--set-upstream` or `-u` to establish a tracking relationship between the local and remote branches.
+
+```
+git push -u [remote-name] [branch-name]
+```
+
 ---
 *Note*: common best practices is to ensure pulling the latest changes before pushing to avoid conflicts.
 
