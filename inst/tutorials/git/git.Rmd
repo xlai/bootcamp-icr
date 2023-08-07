@@ -1,6 +1,6 @@
 ---
-title: "Using git"
-author: "Kristian Brock"
+title: "Version Control with Git"
+author: "Xiaoran Lai"
 output: learnr::tutorial
 runtime: shiny_prerendered
 ---
@@ -18,26 +18,52 @@ library(dplyr)
 
 ## Welcome
 
-This tutorial introduces you to git and gets you running some elementary commands.
+By the end of this training, you will be equipped with the foundational knowledge and skills necessary to effectively use Git for version control in your projects.
 
 ### Learning Objectives
 Upon completion of this session, you will:
 
-* `clone` a git repository;
-* Make and `commit` some changes;
-* Make those changes available to others by using the `push` command;
-* Fetch other people's changes using the `pull` command;
-* Resolve simple conflicts using TODO-what?
-* Use git at CRCTU to manage the analysis directory for a trial.
+* Understand the Importance of Version Control
+* Learn Basic Git Commands:
+  - `clone` a git repository;
+  - Make and `commit` some changes;
+  - Make those changes available to others by using the `push` command;
+  - Fetch other people's changes using the `pull` command;
+* Explore Branching and Merging
+* Collaborate Using Git
+* Resolve simple conflicts
+* Adopt best practices for using git at ICR-CTSU to manage the analysis directory for a trial.
 
+
+## Introduction to Version Control Systems (VCS)
+VCS are tools that help track changes to files and code over time, particularly valuable for maintaining the integrity of statistical analyses and data management.
+![](https://swcarpentry.github.io/git-novice/fig/phd101212s.png)
+
+Importance of Version Control in Clinical Trials:
+
+- Collaboration
+- Data Integrity
+- Compliance and Auditing
+- Efficient Development
 
 ## Introduction to git
 
-[git](https://en.wikipedia.org/wiki/Git) is version-control software that tracks changes in text-based files. 
-This makes it possible to associate changes to files with individuals and monitor the state of files through time. 
-It also allows multiple people to work on the same project with the assurance that they will not bulldoze each other's work. 
+[git](https://git-scm.com/) is a distributed VCS used to track changes in source code.
+It enables statisticians to work together on statistical analysis plans, datasets, and code.
 
-Speaking as a clinical trial statistician, git performs many tasks that are valuable for demonstrating to auditors (e.g. MHRA inspectors) that you have followed your trials unit's standard operating procedures.
+How Git Works in a Clinical Trial Context:
+
+- Managing Code and Documents
+- Branching for Analysis Scenarios
+- Reproducibility
+
+Why Git in Clinical Trials:
+
+- Traceability
+- Integration with Statistical workflow
+- Enhanced Collaboration among cross-functional trial teams
+
+Git is primarily designed to work with text-based files, and it excels at tracking changes, merging content, and resolving conflicts in these types of files. 
 
 But what is a _text-based_ file?
 
@@ -69,7 +95,7 @@ quiz(
     answer("No", correct = FALSE)
   ),
   
-  question("A PDF file (with extension `pdf`, obviously)",
+  question("A PDF file (with extension `pdf`)",
     answer("Yes", correct = FALSE),
     answer("No", correct = TRUE)
   ),
@@ -107,295 +133,470 @@ quiz(
 )
 ```
 
-Hopefully most of those were obvious.
-If those last two threw you, modern MS Office formats are xml-based, making them technically text-based.
+N.B: Modern MS Office formats are xml-based, making them technically text-based.
+
+## Installing git
+
+You can find the latest installation guide [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+- Windows: If you are planning to use git in windows powershell, download and install from [here](https://git-scm.com/download/win); 
+if you intend to use Windowss Subsystem for Linux (WSL), please follow the linux installation guide.
+
+- Mac: Git should be pre-installed already. You can check by trying to run `git` from the Terminal with 
+
+```
+git --version
+```
+
+- Linux: If you on a Debian-based distribution (*i.e.* Ubuntu), you can install it with
+
+```
+sudo apt install git-all
+```
+
+If you are on Fedora or other RPM-based distribution (RHEL for example), use the following
+
+```
+sudo dnf install git-all
+```
+
+## Command line basics
+
+The command line is a text-based interface used to interact with your computer's operating system.
+Many Git operations are performed using command-line instructions. 
+
+Understanding the command line is essential for efficiently using Git.
+
+- Windows:
+
+    a. Command Prompt or PowerShell: Windows users can use Command Prompt or PowerShell for command-line operations.
+    b. Basic Commands:
+
+        - `dir`: List files and directories.
+        - `cd [directory name]`: Change the current directory.
+        - `git --version`: Check the installed Git version.
+
+- Mac and Linux:
+
+    a. Terminal: Mac and Linux users typically use the Terminal for command-line operations.
+    b. Basic Commands (Same for Both):
+    
+        - `ls`: List files and directories.
+        - `cd [directory name]`: Change the current directory.
+        - `git --version`: Check the installed Git version.
 
 
-### Using git
-`git` is initialised to track changes in a directory.
+***
+Tips:
+
+  - Tab Completion: Use the Tab key to auto-complete file and directory names.
+  - Up/Down Arrow Keys: Navigate previous commands.
+
+## Understanding Git Repositories
+
+### Configuring git
+
+To set your global commit name and email address run the `git config` command with the `--global` option:
+
+```
+git config --global user.name "Your Name"
+git config --global user.email "youremail@yourdomain.com"
+```
+
+### Initializing a Git Repository
+
+#### what is a repository
+`git` is used to track changes in a directory.
 A directory being tracked is generally referred to as a _repository_ or a _repo_.
+It is a virtual storage of your project. 
+It allows you to save versions of your code, which you can access when needed.
 
-In the simplest setting, there are two instances of a repository that work together:
+There are two types of repositories:
 
-a) the _origin_ generally exists in some remote or central location. 
-It is like a treasure chest. 
-We wish to put precious new code into the treasure chest to protect it and make it available to others we trust.
-A common place to store an origin repo is GitHub or GitLab.
-We do not generally make changes to the origin.
-b) a working _clone_ or _copy_ of the repository.
-This is generally stored somewhere local and convenient, like a hard disk on your computer or a network drive at work.
-A working copy is initialy created by _cloning_ the origin.
-Changes are then made on this copy and _pushed_ to the origin.
-Until changes are pushed, they are not available to others.
+- **Local** Repository: Stored on your computer for personal use.
+- **Remote** Repository: Stored on a server, facilitating collaboration with others (e.g., GitHub, GitLab).
 
-We will perform of all these actions on a repository created for training.
+Within the local repository, there are three main components:
 
+  - Working Directory: Where files are created and edited.
+  - Staging Area (Index): An intermediate area where changes are listed before committing.
+  - Git Directory (Repository): Where Git stores the metadata and object database for the project.
 
+**Commits** describes how changes are saved as 'commits,' each with a unique identifier.
 
-## Using the command line
-git is command line software.
-There are programs that allow you interact with git using forms and buttons and we will come to those.
-But these just run commands on your behalf.
-Fundamentally, git is command line software and that is where we will begin.
-All three major operating systems allow the user to run commands.
-The methods vary, however.
-The briefest possible introduction to the command line for the main three operating systems appears below.
+Remote Repository enables team collaboration by allowing multiple people to push and pull changes.
+  
+  - Forks and Clones:
+    
+    a. 'forking' a repository is to create a personal copy on the server
+    b. 'cloning' is to download the repository to your local machine.
 
+  - Branching and Merging: A (remote) repository can have multiple branches, facilitating parallel development.
 
-### Command line on Windows
-On a Windows machine, we would run commands using the Command Prompt program (hit Windows key and type `cmd`) or Windows Powershell (hit Windows key and type `powershell`).
-We change drive by typing the drive letter you want followed by colon, and then hitting Return.
-E.g. running `H:` will change the current drive to H.
-We list the contents of the current directory by running `ls`.
-We change directory by running `cd directory_to_open` and we go up a directory by running `cd ..`.
 
+There are two routes to initialise a repository:
 
-### Command line on Mac
-On a Mac, we would use Terminal (hit cmd + space and type `terminal`).
-There are no drive letters.
-As with Windows, we list the contents of the current directory by running `ls`.
-We change directory by running `cd directory_to_open` and we go up a directory by running `cd ..`.
+1. Use `git init`: starting a new project
 
-### Command line on Linux
-Anyone who uses Linux knows how to use the command line. 
-It goes with the territory.
+Once you are within the directory of which you want to keep track, we use the `git init` command to create a new repository.
+It sets up all necessary files and directories that Git needs to keep track of things
 
+```
+git init my_new_project
+```
 
-### Exercise
+2. Use `git clone`: working on an existing project
+`git clone` is used to copy an existing Git repository from a remote server to your local computer. 
+This is how you get a project someone else (or you) has started so you can work on it.
 
-* Open a command prompt.
-* List the contents of the current directory.
-* Change the directory to one of the sub-directories. List the contents.
-* Go back up.
+```
+git clone https://github.com/username/project.git
+```
 
 
-## git workflow
+## Making changes
 
-We are going to work on a project created for the purposes of illustrating how git works.
-We will perform the elementary commands:
+Making changes is at the core of version control, and Git excels at tracking these modifications.
 
-* `clone`
-* `status`
-* `log`
-* `pull`
-* `commit`
-* `push`
+A typical workflow involves the following steps:
 
-However, let us not all charge on at the same time.
-Let us instead proceed one or two persons at a time to replicate how changes to a project might be made in real-life, with some users active and some users dormant.
-Please pay attention to the verbal instructions!
+- editing files
+- staging changes
+- committing, and optionally
+- pushing them to a remote repository.
 
-### Clone
-Identify a place on your computer or network drives where it would be suitable to store your working copy of the project folder.
-For instance, on my Mac, I might store the folder in `/Users/Kristian/Projects/`.
-At work, I might choose `H:/Projects/`.
+### Editing files
+changes to files can be made using any text editor, such as VS Code, or integrated development environment (IDE), such as R studio.
 
-Navigate to this place now.
+You can use `git diff` to show the differences between the working directory and the staging area.
 
-The URL for the origin respository for this project is https://github.com/brockk/gitbootcamp2019.
-Clone the project using the command: 
+```
+git diff [file name]
+```
 
-`git clone https://github.com/brockk/gitbootcamp2019`
+Highlights the differences for a specific file, and 
 
-The project is called gitbootcamp2019.
-The process of cloning will create a directory called `gitbootcamp2019` and download all the contents.
-For example using the root directory identified above, after cloning I would have a working copy in the directory  `/Users/Kristian/Projects/gitbootcamp2019/`.
-Check the directory has been created by running:
+```
+git diff .
+```
 
-`ls`
+Shows differences in all files that you have changed.
 
-If the `gitbootcamp2019` directory is not there, something is amiss. 
-Seek help.
+### Staging (and unstaging) Changes
+Once you are happy with the changes you made, we will be preparing changes for a commit.
 
-If it is there, navigate into it and check the contents using:
+```
+git add [file name]
+```
+Just like `git diff`, we can also use `git add .` to add all changes to the staging area.
 
-`cd gitbootcamp2019`
+If you are accidentally added the wrong file to the staging area, we can revert that by
 
-`ls`
+```
+git restore --staged [filename]
+```
+This step does not remove any changes you have just made to the file. 
+Think of it as the opposite of `git add`.
 
-Check your synchronisation status by running: 
+### Committing Changes
 
-`git status`
+Committing is the process of saving staged changes along with a descriptive message.
+Remember a commit will, for better or worse, generate a record with a unique identifier in the history.
+This is a irreversible process.
 
-You should receive a message telling you that your branch is up to date with the origin because nothing has yet changed.
+```
+git commit -m "Descriptive message"
 
-Also run:
+```
+This creates a commit staged changes with a message.
+You can also use `git commit` which opens a default text editor allowing the creation of longer commit message.
 
-`git log`
+Once you have completed your commit, you can use `git log` to view the commit history.
 
-This should show you the message and user associated with recent commits.
+### Understanding changes
 
+At any point of your workflow (no matter whether you are editing, staging or about to commit),
+you can use `git status` to check the status of changes in the working directory and staging area.
+It is encouraged to check the status before every commit.
 
-### Pull
+## Branching and merging
 
-To synchronise your repository with the origin, you run:
+**Branching** is a way to create parallel lines of development within a project,
+while **merging** combine these parallel lines.
+This two methods enable you or the teams to work on different features or bug fixes simultaneously without affecting the main codebase.
 
-`git pull`
+### Understanding branches
 
+![](https://www.perforce.com/sites/default/files/image/2020-07/image-blog-git-branching-model.jpg)
 
-If you run it now, you should get a message telling you that you are already up to date.
-This may be no surprise, given that you just cloned the repository.
-However, let us imagine that you had created the clone some time ago.
-It is likely that the origin will have received updates in the interim and that your copy is out of date.
-By running `git pull`, you fetch any updates that you are lacking.
-Before making edits to a project, it is good practice to do this.
-It may save you pain later.
+1. creating branches:
 
+```
+git branch [branch-name]
+```
+This creates a new branch, *i.e.* a new 'copy' of the code to work on separately.
 
-### Make changes
+2. listing branches:
 
-Open up the file called `Attendees.txt`.
-Append your name to the list of attendees.
-To do this, using a simple text editor like NotePad or TextEdit is fine.
-Save and close the file.
+```
+git branch
+```
+This allow you see all different 'copies' of lines of development locally.
 
-### Commit
+3. switching between branches:
 
-You made changes to a file that is git tracked and git will have noticed this.
-To confirm this, run:
+```
+git checkout [branch-name]
+```
+This allows you to switch to a specific branch, and move between different parts of your project.
+**Note** this will not work if you are in the middle of making changes.
 
-`git status`
+Be sure to commit before switching to a specific branch as the content of your working directory will change depending on the branches.
 
-Now you should see a message that the file has been modified.
-In order to share these changes with others, we must commit the changes.
+4. deleting branches
 
-To do this, run: 
+```
+git branch -d [branch-name]
+```
+this allows you to remove a branch that is no longer needed.
+**Note** This will only remove any reference to the branch. 
+Any history of the commits made previously will still exist.
+Remember, once they are committed, there will be a mark of it in the log.
 
-`git add Attendees.txt`
+### The power of merging
 
-This command adds `Attendees.txt` to the list of files to commit.
+- combining branches
 
-Then commit using:
+```
+git merge [branch-name]
+```
+This combines the specified branch with the current branch you are in.
+Think of it as taking two separte pieces of writing and weaving them into one document.
 
-`git commit -m "Added my name"`
+- Dealing with conflicts:
 
-The `-m` option means _I am going to give you a commit message and here it comes_.
-The commit message appears inside the double quotes.
-The quotes are important.
+Sometimes, changes in different branches may result in conflict.
+If this is the case, the merging process will be halted temporarily by Git.
+However Git will be (helpfully) highlight the conflicts and this must be manually resolved before attempting merge again.
+We will discuss this further in a separate section.
 
-Check the project status by once again running: 
+## Pulling and Pushing Changes
 
-`git status`
+the concepts of pulling (retrieving) and pushing (sending) changes between local and remote repositories
+are foundational for collaborating with other team members, keeping everyone's work in sync.
 
-You should receive confirmation now that there is nothing further to commit because you just committed the one change.
-You will also see that your branch is a commit ahead of the origin.
+### Setting Up Remote Repositories
+A remote repository is a version of your project hosted on the internet or network, facilitating collaboration.
+If you are working on an existing project by `git clone`, you can verify that a remote has been set up correct as follow:
 
-By committing, you have advanced _your copy_ of the project.
-However, other users do not know about the change yet.
-In order for them to see your changes, you need to `push`.
+```
+git remote -v
+```
 
-### Push
-To push your local commit(s) to the origin, you run:
+- Create a remote repository
+This can be done on platforms like GitHub, GitLab, Bitbucket, etc. 
+When you create the repository on one of these platforms, it will provide you with a URL for the repository.
 
-`git push`
+- Adding a remote repository
+To add a new remote, use the `git remote add` command on the terminal, in the directory your repository is stored.
 
-Run that now.
-After a little pause, you may receive a success message mentioing objects written to github.com.
-If so, you have successfully updated the project and shared your progress. 
-Congratulate yourself.
-Check the status of your local repo again by running:
+```
+git remote add [remote-name] [URL]
+```
+Adds a remote repository with a specified name and URL (e.g., on GitHub). 
+A common remote name is `origin`.
+Once the remote repository is added, we can proceeed with the push/pulling.
 
-`git status`
 
-The message about being ahead of the origin should have gone.
-You should now be nicely in sync.
+### Pulling changes
 
+Pulling is the process of fetching updates from a remote repository and merging them into your local repository.
+This is mostly used when team members make changes to the shared codebase, pulling ensures that you have the latest version.
 
-However, if the origin has moved on since you last pulled (recall that this is completely out of your control because you are working in a collaborative environment!), then your `push`  will fail and you will get a message saying that updates were rejected.
-If this happens, the following subsections are for you.
+```
+git pull [remote-name] [branch-name] --rebase
+```
 
-#### Pull (again)
-You are in situation where you are trying to add to a repository whilst being ignorant about recent changes.
-**git forbids this.**
-You need to make yourself aware of recent changes and you do that by pulling from the origin.
-It may be that the commits you are ignorant about have changed different files to you.
-If so, git will merge the two commits with no drama and allow you to push as before.
-If, however, there are conflicts because you and a colleague edited the same file, the software will tell you so.
+This fetches changes from the specified remote repository and branch and merges them into your local branch.
+The commonly used `--rebase` option will rearrange the commits to make it look like everything happened in a linear orderly fashion.
 
-Fetch the missing commits by running:
+Imagine you and a co-author are writing chapters of a book simultaneously. 
+You both have a copy of the original manuscript, and you're both adding to it.
+You finish your chapter and want to add it to the book, but you discover that your co-author has already added a new chapter.
+Instead of simply inserting both chapters, you carefully weave your co-author's chapter into the book first, as if it were always there, and then add your chapter on top of it. 
+To anyone reading the book, it appears as though the chapters were written in a perfect sequence, with no indication of the separate work.
 
-`git pull`
+### Pushing changes
+Pushing is the process of sending your local changes to a remote repository so that others can access them.
+Pushing allows you to share those updates with the team when you've made changes to the code.
 
-If you receive a message like: 
 
-> CONFLICT (content): Merge conflict in <file(s)>, 
->
-> Automatic merge failed; fix conflicts and then commit the result.
+```
+git push [remote-name] [branch-name]
+```
+This sends your local changes to the specified remote repository and branch.
 
-go to the next section.
+---
+*Note*: common best practices is to ensure pulling the latest changes before pushing to avoid conflicts.
 
-If git auto-merged the conflicts, you can just `git push` as normal.
+## Conflict Resolution
 
+Conflicts occur when two branches have conflicting changes that Git cannot reconcile automatically.
+This could happen during the merge of two local branches, or when changes in a remote branch is being pulled locally.
+Your ability in resolving merge conflicts is essential for collaboration and code integrity.
 
-#### Merge (possibly)
-You are in the awkward situation where you need to merge conflicting changes to a file.
-There is no way git can do this for you because the software does not know what you and your colleague intended to achieve.
-All it knows is that your changes are in conflict and that a human has to resolve it.
+Let's consider a simple scenario where two developers are working on different branches of the same project, and they both make changes to the same line of a file named example.txt.
+This is a common situation that can lead to a merge conflict.
 
-Open the file(s) in conflict using a suitable editor.
-In our contrived example, we have created conflicts in Attendees.txt and we can resolve the conflicts in a text editor.
+Original content of `example.txt` (on `main` branch)
 
-Open the file.
-The conflicts will be denoted using blocks like this:
+```
+Welcome to our project!
+Please contribute to this file.
+Thank you for collaborating.
+```
 
+Developer A decided to change (on `feature-a` branch) the second line to:
+
+```
+Please contribute to this file with new ideas.
+```
+Meanwhile, developer B decided to change (on `feature-b` branch) the second line to:
+
+```
+Please contribute by following our guidelines.
+```
+
+Both Developer A and Developer B made changes to the same line in their respective branches.
+If Developer A merges their changes to main first, and then Developer B attempts to merge their changes, Git will not know which change to accept, leading to a merge conflict.
+
+```
+$ git pull origin feature-b #or git merge feature-b feature-a
+CONFLICT (content): Merge conflict in example.txt,
+
+Automatic merge failed; fix conflicts and then commit the result.
+
+```
+
+### Conflicts in Git
+When Developer B attempts to merge, they might see a conflict like this in `example.txt`:
+
+> ```
+> Welcome to our project!
 > <<<<<<< HEAD
->
-> * Person 1
->
+> Please contribute to this file with new ideas.
 > =======
->
-> * Person 2
-> 
-> \>\>\>\>\>\>\> 65d6d676a1b7e1ecf13966a5acf66fc7e9b09e5f
+> Please contribute by following our guidelines.
+> >>>>>>> feature-b
+> Thank you for collaborating.
+> ```
 
-The bit in the first section (here, "Person 1") is what you tried to add and the bit in the second section ("Person 2") is what the file in the repository wants to use.
-The conflicting sections are separated by the ====== and encloed within the angle brackets.
-Finally, the long alphanumeric string conveys the commit in the repository to which your changes are being compared.
-You would resolve this example by simpling editing the file to say:
+The conflict markers `(<<<<<<<, =======, >>>>>>>)` delineate the conflicting changes.
+The text between `<<<<<<< HEAD` and `=======` shows Developer A's changes (already merged into main), 
+while the text between `=======` and `>>>>>>> feature-b` shows Developer B's changes on their `feature-b` branch.
 
-> * Person 1
->
-> * Person 2
+### Example Resolution
 
-i.e. you simply delete the lines with the angle brackets and the equals signs.
-Save and close. 
+To resolve this conflict, Developer B must manually edit the file to choose one of the changes or combine them as needed, remove the conflict markers, and then save, add, and commit the resolved file.
 
-At this point, your copy of `Attendees.txt` has been changed again so it needs to be staged for commit again with:
+A resolved version might look like this:
 
-`git add Attendees.txt`
+```
+Welcome to our project!
+Please contribute to this file with new ideas and by following our guidelines.
+Thank you for collaborating.
+```
+After the changes are made, you can carry on and repeat with your merging workflow as mentioned in the previous sections.
 
-In the wild, you would need to re-add any files that have been changed through conflicts being resolved.
+##  Popular Git Workflows
 
-You then commit all added files again with another (meaningful!) commit message.
-Do this by running:
+It is important to select an appropriate Git workflow prior to the start of any project to enhance collaboration and streamline development.
 
-`git commit -m "Resolving conflict"`
+There are two popular git workflows which we will highlight below.
 
-To check out the lay of the land, run once more:
+### Github flow
 
-`git status`.
+![](http://andersenlab.org/dry-guide/2022-03-09/img/github_flow.png){width=80%}
 
-You will see that you are now two commits ahead of origin: one for your original changes and another for the resolution to the conflict.
+GitHub Flow is a lightweight, branch-based workflow.
 
+In terms of branching strcture, typically only the main and feature branches are used. 
+The main steps are outlined as follow:
 
-#### 
+- Sync with remote: Pull from the remote repository before beginning any work
+- Create a Branch: Start a new branch for each new feature or bug fix.
+- Commit Changes: Commit work to this branch locally.
+- Open a Pull Request: Submit changes for review.
+- Review & Merge: After review, merge changes into the master branch.
 
-Push the ensemble to the origin with:
+In essense, the main branch is always live and up-to-date with the latest feature.
+It is best for small teams or projects that do not require a heavy structure as it allows for continuous development.
 
-`git push`
+### Gitflow
+![](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fgitbook.tw%2Fimages%2Ftw%2Fgitflow%2Fwhy-need-git-flow%2Fflow.png){width=80%}
 
-This should succeed.
+Gitflow, on the other hand, is a more rigid, rule-based workflow.
+It makes use of delicate branches, for example, master, develop, feature, release, and hotfix, to create well-defined phases of development
+Possible steps to create this workflow:
 
-[But be aware, it need not necessarily succeed!
-If you are working on a project with hundreds of collaborators who are adding commits, and resolving your conflicts took an appreciable amount of time, it is entirely possible that someone else snuck in another commit in the interim. In this case, your `push` would fail again for the same reason and you would find yourself doing another merge. As painful as this sounds, it is important to acknowledge that git is preventing you and colleagues from over-writing each other's work. That is worth a lot.]
+- Develop & Feature Branches: Continuous development occurs here, just like the Github flow
+- Release Branches:  The develop branch gets merged to release once `develop` has acquired enough features.
+- Main Branch: This branch reflects the official release history with version tag.
+- Hotfix Branches: Quick fixes to live releases, usually from the main.
 
+This is a rather grand workflow and hence it is suitable for larger teams and more complex projects.
+It is ideal for a project that has defined stages of development and release.
 
-## Point-and-click software
+### Practical tips and best practices
 
-In practice, it is common to `commit`, `push` and `pull` using a graphical program like TortoiseGit or a development environment like RStudio, which works nicely with git via a dedicated pane.
-Using these graphical methods, you generally select files that you want to commit by ticking boxes.
-You then type in a commit message and click a button to commit.
-And then you click another button to push.
-This route is nice because it saves a lot of typing
+- Choosing the right workflow
+
+    - **Assess Your Project**: It's essential to evaluate the unique characteristics of your project, including team size, complexity, release cycle, and specific requirements, to select the most suitable workflow.
+    - **Flexibility vs. Structure**: Consider your team's need for flexibility or structure. 
+    - **Customization**: Every project is different, and sometimes a one-size-fits-all approach might not be the best fit. 
+    Don't hesitate to adapt or even combine aspects of different workflows to create a process that aligns with your team's needs and project goals.
+
+- Common Guidelines and Practices
+
+    - **Clear Communication**: Regardless of the workflow chosen, maintaining clear and open lines of communication among team members is crucial. 
+    Regular updates and discussions can prevent misunderstandings and conflicts, ensuring that everyone is aligned with the project's direction and status.
+    - **Documentation**: Having well-documented guidelines for the chosen workflow helps ensure that all team members understand the process and expectations. 
+    This includes not only the technical aspects of branching, merging, and releasing but also the collaboration practices such as code review and issue tracking.
+    - **Consistency**: Applying the chosen workflow consistently across the project helps in establishing a rhythm and makes it easier for team members to collaborate. 
+    Consistency aids in minimizing confusion and enables more efficient progress tracking.
+    - **Regular Review and Adaptation**: Workflows are not set in stone. 
+    Regularly reviewing how the current workflow is serving the project and being open to adjustments as needed allows the team to respond to changing requirements or challenges effectively.    
+
+Here are some common practices that could help you with your daily Git activities:
+
+  - **Commit Messages**: Descriptive and Concise: Writing clear and descriptive commit messages helps in understanding the changes made. 
+  A good practice is to start with a brief summary followed by a more detailed explanation if necessary.
+  - **Standardized Branch Naming**: Adopting a standard naming convention for branches (e.g., feature/, bugfix/, hotfix/) ensures clarity and helps in tracking the purpose of each branch.
+  - **Frequent Syncing with Main Branch**: Avoid Large Divergence: Regularly pulling changes from the main or base branch helps in keeping feature or development branches up to date, minimizing the risk of conflicts.
+  - **Tagging Releases**: Utilizing tags to mark release versions provides a clear history of the project's progression and allows for easy navigation to specific points in the project's lifecycle.
+
+## Leveraging Graphical Tools
+
+In practice, there are graphical tools can simplify complex Git operations, providing a more intuitive and visual approach.
+In this section, we will brieftly look into VS Code. It comes with built-in Git integration, offering a user-friendly interface for common Git tasks.
+
+You can find detailed tutorials for common Git tasks [here](https://vscode.github.com/) with video explanation.
+
+### Built-In Git Features in VS Code
+
+- Source control panel
+- Diff Viewer
+- Git History and logs
+- Integration extensions
+
+## Resources & Further Learning
+
+### Links to Tutorials
+
+Provide links to tutorials, documentation, etc.
+
+### Additional Resources
+
+Recommend books, courses, etc.
 
 
