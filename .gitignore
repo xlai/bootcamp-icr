@@ -3,4 +3,4 @@
 .RData
 .Ruserdata
 TEST.Rmd
-inst/tutorials/*.html
+inst/tutorials/**/*.html
